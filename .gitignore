@@ -1,0 +1,6 @@
+app/target/
+app/build/
+app/target/
+app/debug/
+app/release/
+**/*.rs.bk

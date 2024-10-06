@@ -1,8 +1,14 @@
-use active_win_pos_rs::get_active_window;
-use device_query::{DeviceQuery, DeviceState, MousePosition};
+mod afk;
+mod active_app;
+mod networking;
+mod config;
+use afk::{LastState, is_afk};
+use active_app::{ActiveApp, active_window};
+use device_query::{DeviceQuery, DeviceState};
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::{Duration, SystemTime};
+use networking::{send_logs, logs_serialize};
 fn main() {
     //device state & links
     let device_state = DeviceState::new();
@@ -27,7 +33,7 @@ fn main() {
     let active_app_clone = Arc::clone(&active_app); //for active_window_handle
     let active_app_clone_is_afk = Arc::clone(&active_app); //for is_afk
     //log list & links
-    let mut log_list: Vec<ActiveApp> = Vec::new();
+    let log_list: Vec<ActiveApp> = Vec::new();
     let log_list_clone = Arc::new(Mutex::new((log_list)));
 
     //threads
@@ -39,192 +45,20 @@ fn main() {
     });
 
     let active_window_handle = thread::spawn(move || loop {
-        let last_state_inner = Arc::clone(&last_state_clone_active_window);
         let active_app_inner = Arc::clone(&active_app_clone);
         let log_list_inner = Arc::clone(&log_list_clone);
         active_window(active_app_inner, log_list_inner);
         thread::sleep(Duration::from_millis(500));
     });
 
-    let logger_handle = thread::spawn(move || {});
+    let logger_handle = thread::spawn(move || loop{
+        
+    });
 
     active_window_handle.join().unwrap();
     is_afk_handle.join().unwrap();
-
-    //thread 1 (is afk):
-    //monitoring device input
-    //logs this into LastState
-    //thread 2 (active window):
-    //getting active window
-    // if LastState.duration < 300s ? or log list longer then IDK
-    //logs this into ActiveApp
-    //else mark as afk
-    //thread 3 (send logs):
-    //sending logs every 5(?) mins
-
-    //thread 1 uses:
-    //last state arc mutex
-    //thread 2 uses:
-    //active window arc mutex
-    //logs vec arc mutex (later)
-    //thread 3 uses:
-    //logs vec arc
-    //last state arc (later)
+    logger_handle.join().unwrap();
 }
 
-#[derive(Debug, Clone)]
-pub struct ActiveApp {
-    name: String,
-    title: String,
-    time: SystemTime,
-    duration: Duration,
-    is_afk: bool,
-    afk_moments: Vec<AfkMoment>,
-}
 
-#[derive(Debug, Clone)]
-pub struct AfkMoment {
-    start_time: SystemTime,
-    duration: Duration,
-}
-
-#[derive(Debug)]
-pub struct LastState {
-    coords: MousePosition,
-    time: SystemTime,
-    duration: Duration,
-}
-
-fn is_afk(last_state: Arc<Mutex<LastState>>, active_app: Arc<Mutex<ActiveApp>>) { //мб потом дописать если разница между афк моментами 
-    let device_state = DeviceState::new();// 1 старттайм + 1 дуратион +-= 2 страттайм то стакать афк моментыч 
-    let mut last_state = last_state.lock().unwrap();
-    let mut active_app = active_app.lock().unwrap();
-
-    if !device_state.get_keys().is_empty()
-        || device_state.get_mouse().coords != last_state.coords
-        || device_state.get_mouse().button_pressed.contains(&true)
-    {
-        last_state.coords = device_state.get_mouse().coords;
-        last_state.duration = last_state.time.elapsed().unwrap();
-        last_state.time = SystemTime::now();
-    } else {
-        last_state.duration = last_state.time.elapsed().unwrap();
-
-        if last_state.duration > Duration::from_secs(5) {
-            if let Some(last_afk_moment) = active_app.afk_moments.last_mut() {
-                //test  perviy li eto afk moment
-                if !active_app.is_afk {
-                    active_app.afk_moments.push(AfkMoment {
-                        start_time: SystemTime::now() - last_state.duration,
-                        duration: last_state.duration,
-                    });
-                    println!("AFK moment logged: {:?}", active_app.afk_moments);
-                    active_app.is_afk = true
-                } else {
-                    active_app.afk_moments.last_mut().unwrap().duration = last_state.duration;
-                    println!("AFK moment updated: {:?}", active_app.afk_moments);
-                }
-            } else {
-                active_app.afk_moments.push(AfkMoment {
-                    start_time: SystemTime::now() - last_state.duration,
-                    duration: last_state.duration,
-                });
-                active_app.is_afk = true;
-            }
-        } else {
-            active_app.is_afk = false
-        }
-    }
-}
-
-fn active_window(app: Arc<Mutex<ActiveApp>>, log_list: Arc<Mutex<Vec<ActiveApp>>>) {
-    let active_app = app.lock().unwrap();
-    let mut log_list = log_list.lock().unwrap();
-    // let last_state = Arc::clone(&last_state);
-    {
-        //loop
-        match get_active_window() {
-            Ok(window) => {
-                if active_app.title != window.title {
-                    // println!(
-                    //     "active_window: {:#?} {:?}",
-                    //     active_app,
-                    //     active_app.duration.as_secs()
-                    // );
-                    let app_clone = Arc::clone(&app);
-                    log_list.push(active_app.clone());
-
-                    println!("LOG LIST ========================================================== \n {:#?}", log_list);
-                    //get result is afk
-                    drop(active_app);
-                    // log_active_app(app_clone, last_state, log_list);
-
-                    let mut active_app = app.lock().unwrap();
-
-                    active_app.name = window.app_name;
-                    active_app.title = window.title;
-                    active_app.time = SystemTime::now();
-                    println!("REALACTIVEAPP: {}", active_app.title);
-                }
-            }
-            Err(_) => {
-                println!("errrr");
-            }
-        }
-    }
-}
-
-// fn log_active_app(
-//     app: Arc<Mutex<ActiveApp>>,
-//     last_state: Arc<Mutex<LastState>>,
-//     log_list: Arc<Mutex<Vec<ActiveApp>>>,
-// ) {
-//     let mut app = app.lock().unwrap();
-//     let last_state = last_state.lock().unwrap();
-//     let mut log_list = log_list.lock().unwrap();
-//     app.duration = app.time.elapsed().unwrap();
-//     // //dobavit' push v log list
-//     if last_state.duration > Duration::from_secs(5) {
-//         log_list.push(ActiveApp {
-//             name: "AFK".to_string(),
-//             title: "AFK".to_string(),
-//             time: app.time,
-//             duration: app.duration,
-//             afk_moments: Vec::new(), //ETO TEMPORARY HUETA
-//             is_afk: false,
-//         });
-//         println!("LOG LIST: {:#?}", log_list);
-//     } else if last_state.duration <= Duration::from_secs(5) {
-//         // !!!!!!!! CHANGE DURATION LATER
-//         log_list.push(app.clone());
-//         println!("LOG LIST: \n{:#?}", log_list);
-//     }
-//     // println!("LOGS: {:#?}, {}", app, app.duration.as_secs());
-// }
-
-//ошибка в логике кода
-//я сначала логирую ласт мув
-//потом если он меньше 5 то сохраняю как работу а не афк
-//нужно сначала
-//
-//я вызываю из афк только на измeнении окна
-//а надо вызывать постоянно
-//но как мне так слепить бы две этих функции что бы они не накладывались
-//
-//
-//
-//если меняется окно то значит был мув
-//получается нужно брать предпоследений мув а не тока шо который
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
+//networking.rs later

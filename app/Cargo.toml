@@ -7,6 +7,9 @@ build = "build.rs"
 [dependencies]
 active-win-pos-rs = "=0.8.3"
 device_query = "2.1.0"
+serde = {version =  "1.0.210",  features = ["derive"] }
+serde_json = "1.0.1"
+reqwest = {version = "0.12.8", features = ["json"]}
 
 [build-dependencies]
 build = "0.0.2"

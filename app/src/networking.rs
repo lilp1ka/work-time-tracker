@@ -1,28 +1,33 @@
-use serde::{Serialize, Deserialize};
-use serde_json::json;
-use super::ActiveApp;
-use std::{fmt::format, sync::{Arc, Mutex}};
-use reqwest::Client;
 use super::config::HOST_IP_ADDR;
+use super::ActiveApp;
+use reqwest::{Client, Error, Response};
+use serde::{Deserialize, Serialize};
+use serde_json::json;
+use std::{
+    fmt::format,
+    sync::{Arc, Mutex},
+};
 
-pub fn logs_serialize(log_list: Arc<Mutex<Vec<ActiveApp>>>){
-    let log_list = log_list.lock().unwrap();
+pub fn logs_serialize(log_list: Vec<ActiveApp>) -> String {
+    // let log_list = log_list.lock().unwrap();
     let serialized = serde_json::to_string(&*log_list.clone()).unwrap();
-    send_logs(serialized);
+    // send_logs(serialized);
+    println!("==========================log_list: \n {:#?}", log_list);
+    serialized
 }
 
-pub async fn send_logs(log_list: String){
-    let logs_json = json!({"log" : log_list} );
+pub async fn send_logs(log_list: Vec<ActiveApp>) -> Result<Response, Error>{
+    let logs_serialized = logs_serialize(log_list);
+    let logs_json = json!({"log" : logs_serialized} );
     println!("TO SEND: {}", logs_json);
 
     let client = Client::new();
 
-    let response = client.post(format!("{}/logs/", HOST_IP_ADDR))
-    .json(&logs_json)
-    .send()
-    .await;
+    let response = client
+        .post(format!("{}/logs/", HOST_IP_ADDR))
+        .json(&logs_json)
+        .send()
+        .await;
     println!("RESPONSE: {:#?}", response);
-
+    response
 }
-
-

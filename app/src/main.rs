@@ -1,14 +1,16 @@
-mod afk;
 mod active_app;
-mod networking;
+mod afk;
 mod config;
-use afk::{LastState, is_afk};
-use active_app::{ActiveApp, active_window};
+mod networking;
+use active_app::{active_window, ActiveApp};
+use afk::{is_afk, LastState};
 use device_query::{DeviceQuery, DeviceState};
+use networking::{logs_serialize, send_logs};
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::{Duration, SystemTime};
-use networking::{send_logs, logs_serialize};
+use tokio::runtime::Runtime;
+
 fn main() {
     //device state & links
     let device_state = DeviceState::new();
@@ -30,11 +32,19 @@ fn main() {
         afk_moments: Vec::new(), // ETO POTOM UBRAT NAHUI
         is_afk: false,
     }));
+
+    
     let active_app_clone = Arc::clone(&active_app); //for active_window_handle
     let active_app_clone_is_afk = Arc::clone(&active_app); //for is_afk
+    
     //log list & links
-    let log_list: Vec<ActiveApp> = Vec::new();
-    let log_list_clone = Arc::new(Mutex::new((log_list)));
+    let log_list: Arc<Mutex<Vec<ActiveApp>>> = Arc::new(Mutex::new(Vec::new()));
+    let log_list_clone = Arc::clone(&log_list);
+    let log_list_clone2 = Arc::clone(&log_list);
+
+    //runtime
+    let rt = Arc::new(Mutex::new(Runtime::new().unwrap()));
+    let rt_clone = Arc::clone(&rt);
 
     //threads
     let is_afk_handle = thread::spawn(move || loop {
@@ -51,8 +61,22 @@ fn main() {
         thread::sleep(Duration::from_millis(500));
     });
 
-    let logger_handle = thread::spawn(move || loop{
-        
+    let logger_handle = thread::spawn(move || loop {
+        let log_list_clone = Arc::clone(&log_list_clone2);
+        let mut log_list_inner =  log_list_clone.lock().unwrap();
+        let rt_inner = rt_clone.lock().unwrap();
+        if log_list_inner.len() >= 2 {
+            let logs_to_send = log_list_inner.clone();
+            rt_inner.block_on(async move{
+                match send_logs(logs_to_send).await{
+                    Ok(response) => {
+                        println!("GOT RESPONSE {:#?}", response);
+                        log_list_inner.clear();
+                },
+                    Err(err) => {eprintln!("Error {}", err);}
+                }
+            });
+        }
     });
 
     active_window_handle.join().unwrap();
@@ -60,5 +84,3 @@ fn main() {
     logger_handle.join().unwrap();
 }
 
-
-//networking.rs later

@@ -7,6 +7,6 @@ COPY init.sql /docker-entrypoint-initdb.d/
 # Указываем переменные окружения для PostgreSQL
 ENV POSTGRES_USER=root
 ENV POSTGRES_PASSWORD=root
-ENV POSTGRES_DB=mydatabase
+ENV POSTGRES_DB=WORK_TIME_TRACKER
 
 # Контейнер автоматически выполнит скрипт init.sql при старте

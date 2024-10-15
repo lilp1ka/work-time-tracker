@@ -21,3 +21,4 @@ venv/
 *.dylib
 coverage/
 *.lcov
+*.md

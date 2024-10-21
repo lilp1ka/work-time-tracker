@@ -30,7 +30,7 @@ pub fn active_window(app: Arc<Mutex<ActiveApp>>, log_list_n: Arc<Mutex<Vec<Activ
                     // drop(log_list);
 
                     logs_serialize(log_list.clone()); //TEMP
-                                                             // println!("LOG LIST ========================================================== \n {:#?}", log_list);
+                                                      // println!("LOG LIST ========================================================== \n {:#?}", log_list);
                     drop(active_app);
                     let mut active_app = app.lock().unwrap();
 

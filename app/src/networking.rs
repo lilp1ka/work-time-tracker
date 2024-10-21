@@ -16,7 +16,7 @@ pub fn logs_serialize(log_list: Vec<ActiveApp>) -> String {
     serialized
 }
 
-pub async fn send_logs(log_list: Vec<ActiveApp>) -> Result<Response, Error>{
+pub async fn send_logs(log_list: Vec<ActiveApp>) -> Result<Response, Error> {
     let logs_serialized = logs_serialize(log_list);
     let logs_json = json!({"log" : logs_serialized} );
     println!("TO SEND: {}", logs_json);
@@ -29,5 +29,6 @@ pub async fn send_logs(log_list: Vec<ActiveApp>) -> Result<Response, Error>{
         .send()
         .await;
     println!("RESPONSE: {:#?}", response);
+
     response
 }

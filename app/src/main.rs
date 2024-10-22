@@ -2,73 +2,90 @@ mod active_app;
 mod afk;
 mod config;
 mod networking;
+mod daemons{
+    pub mod linux_daemonize;
+}
 use active_app::{active_window, ActiveApp};
 use afk::{is_afk, LastState};
 use device_query::{DeviceQuery, DeviceState};
 use networking::{logs_serialize, send_logs};
-use std::sync::{Arc, Mutex};
+use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
 use std::time::{Duration, SystemTime};
 use tokio::runtime::Runtime;
+use tray_item::{TrayItem, IconSource};
+use std::io::Cursor;
 
-use daemonize::{Daemonize, Group, User};
-use uzers::{get_current_gid, get_current_groupname, get_current_uid, get_current_username};
 
-
-use std::fs::File;
-use std::fs::remove_file;
+enum Message {
+    OpenG,
+    Quit,
+    Update,
+}
 
 fn main() { 
 
 
-    // [linux] run with sudo only, cuz otherwise daemonize can't read pid file
     if cfg!(target_os = "linux"){
-        // let user = env::var("USER").unwrap_or_else(|_| );
-        println!("URA ETO LINUX");
-        let stdout = match File::open("/tmp/wtt-daemon.out"){ // LATER clean after successful log send
-        Ok(file) => {file},
-        Err(_) => {
-            File::create("/tmp/wtt-daemon.out").unwrap()},
-    };
-
-    let stderr = match File::open("/tmp/wtt-daemon.err"){ //LATER clean after successful log send
-        Ok(file) => {file},
-        Err(_) => {
-            File::create("/tmp/wtt-daemon.err").unwrap()},
-    };
-
-    let pid_file_path = "/tmp/wtt-test.pid";
-
-    let _ = remove_file(pid_file_path);
-
-    let uid = get_current_uid();
-    let gid = get_current_gid();
-
-    //test
-    let groupname = get_current_groupname().unwrap();
-    let username = get_current_username().unwrap();
-    println!("USER {:#?}, GROUP {:#?}", groupname, username);
-    println!("USER {:#?}, GROUP {:#?}", uid, gid);
-    let user: User = User::from(uid); 
-    let group = Group::from(gid);
-    println!("USER {:#?}, GROUP {:#?}", user, group);
-    let daemonize = Daemonize::new()
-        .pid_file("/tmp/wtt-test.pid") // Every method except `new` and `start`
-        .chown_pid_file(false)      // is optional, see `Daemonize` documentation
-        .working_directory("/tmp") // for default behaviour.
-        .user(user)
-        .group(group) // Group name        // or group id.
-        .umask(0o777)    // Set umask, `0o027` by default.
-        .stdout(stdout)  // Redirect stdout to `/tmp/daemon.out`.
-        .stderr(stderr);  // Redirect stderr to `/tmp/daemon.err`.
-
-    match daemonize.start() {
-        Ok(_) => println!("Success, daemonized"),
-        Err(e) => eprintln!("Error, {}", e),
+        daemons::linux_daemonize::daemonize();
     }
 
-    }
 
+    let tray_thread = thread::spawn(move || {
+
+    
+        let cursor = Cursor::new(include_bytes!("icon.png"));
+        let decoder = png::Decoder::new(cursor);
+        let mut reader = decoder.read_info().unwrap();
+        let info = reader.info().clone();
+        let buff_size = info.width as usize * info.height as usize * 4 as usize;
+        let mut buff = vec![0; buff_size];
+        reader.next_frame(&mut buff);
+    
+        let icon = IconSource::Data {
+            data: buff,
+            height: info.height as i32, 
+            width: info.width as i32,  
+        };
+    
+        let mut tray = TrayItem::new("work-time-tracker", icon).unwrap();
+    
+        tray.add_label("example label").unwrap();
+    
+        let (tx, rx) = mpsc::sync_channel::<Message>(2);
+    
+        let update_tx = tx.clone();
+        let quit_tx = tx.clone();
+        let id_menu = tray
+        .inner_mut()
+        .add_menu_item_with_id("Open App", move ||{
+            update_tx.send(Message::OpenG).unwrap()
+        }).unwrap();
+        tray.add_menu_item("Quit", move || {
+            quit_tx.send(Message::Quit);
+        });
+        
+        loop {
+            match rx.recv(){
+                Ok(Message::OpenG) => {
+                    println!("openg");
+                }
+                Ok(Message::Quit) => {
+                    println!("quit");
+                }
+                Ok(Message::Update) => {
+                    println!("update");
+                }
+                Err(e) => {
+                    println!("tray err: {}", e);
+                } 
+            }
+        }
+    
+        
+    });
+
+    
 
     //device state & links
     let device_state = DeviceState::new();
@@ -147,9 +164,11 @@ fn main() {
         }
     });
 
+    tray_thread.join().unwrap();
     active_window_handle.join().unwrap();
     is_afk_handle.join().unwrap();
     logger_handle.join().unwrap();
+
 }
 
 

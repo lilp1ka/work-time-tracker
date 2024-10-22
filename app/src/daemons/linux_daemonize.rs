@@ -1,7 +1,12 @@
 
+use std::fs::File;
+use std::fs::remove_file;
+use daemonize::{Daemonize, Group, User};
+use uzers::{get_current_gid, get_current_groupname, get_current_uid, get_current_username};
+
+
 pub fn daemonize(){
     if cfg!(target_os = "linux"){
-        // let user = env::var("USER").unwrap_or_else(|_| );
         println!("URA ETO LINUX");
         let stdout = match File::open("/tmp/wtt-daemon.out"){ // LATER clean after successful log send
         Ok(file) => {file},
@@ -22,11 +27,6 @@ pub fn daemonize(){
     let uid = get_current_uid();
     let gid = get_current_gid();
 
-    //test
-    let groupname = get_current_groupname().unwrap();
-    let username = get_current_username().unwrap();
-    println!("USER {:#?}, GROUP {:#?}", groupname, username);
-    println!("USER {:#?}, GROUP {:#?}", uid, gid);
     let user: User = User::from(uid); 
     let group = Group::from(gid);
     println!("USER {:#?}, GROUP {:#?}", user, group);

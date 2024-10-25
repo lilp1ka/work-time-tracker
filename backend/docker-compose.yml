@@ -15,6 +15,8 @@ services:
       - DATABASE_URL=postgresql://root:root@auth-db:5432/auth_db
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+    networks:
+      - backend-network
 
   # User-service
   user-service:
@@ -30,6 +32,8 @@ services:
       - DATABASE_URL=postgresql://root:root@user-db:5432/user_db
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+    networks:
+      - backend-network
 
   # Data Processing Service
   data-processing-service:
@@ -45,6 +49,8 @@ services:
       - DATABASE_URL=mongodb://data-db:27017/data_db  # Используем MongoDB
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+    networks:
+      - backend-network
 
   # PostgreSQL для auth_service
   auth-db:
@@ -58,6 +64,8 @@ services:
       - "5551:5432"
     volumes:
       - auth-db-data:/var/lib/postgresql/data
+    networks:
+      - backend-network
 
   # PostgreSQL для user_service
   user-db:
@@ -71,6 +79,8 @@ services:
       - "5552:5432"
     volumes:
       - user-db-data:/var/lib/postgresql/data
+    networks:
+      - backend-network
 
   # MongoDB для data_processing_service
   data-db:
@@ -80,7 +90,9 @@ services:
       - "27017:27017"
     volumes:
       - data-db-data:/data/db
-    command: bash -c "apt-get update && apt-get install -y mongodb-org-shell && mongod"  # Redis сервис для всех микросервисов
+    networks:
+      - backend-network
+
   redis:
     image: redis:latest
     container_name: redis
@@ -88,6 +100,8 @@ services:
       - "5555:6379"
     volumes:
       - redis-data:/data
+    networks:
+      - backend-network
 
 # Определяем тома для базы данных
 volumes:
@@ -95,3 +109,7 @@ volumes:
   user-db-data:
   data-db-data:
   redis-data:
+
+# Определяем сеть для микросервисов
+networks:
+  backend-network:

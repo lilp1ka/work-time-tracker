@@ -5,6 +5,7 @@ services:
   auth-service:
     build:
       context: ./auth_service
+      dockerfile: Dockerfile  # Убедитесь, что Dockerfile в auth_service
     container_name: auth_service
     ports:
       - "8001:8000"
@@ -22,6 +23,7 @@ services:
   user-service:
     build:
       context: ./user_service
+      dockerfile: Dockerfile  # Убедитесь, что Dockerfile в user_service
     container_name: user_service
     ports:
       - "8002:8000"
@@ -39,14 +41,15 @@ services:
   data-processing-service:
     build:
       context: ./data_processing_service
+      dockerfile: Dockerfile  # Убедитесь, что Dockerfile в data_processing_service
     container_name: data_processing_service
     ports:
       - "8003:8000"
     depends_on:
-      - mongo-service  # Изменено на mongo-service
+      - mongo-service
       - redis
     environment:
-      - DATABASE_URL=mongodb://mongo-service:27017/data_db  # Изменено на mongo-service
+      - DATABASE_URL=mongodb://mongo-service:27017/data_db
       - REDIS_HOST=redis
       - REDIS_PORT=6379
     networks:
@@ -56,6 +59,7 @@ services:
   mongo-service:
     build:
       context: ./data_processing_service/mongo
+      dockerfile: Dockerfile  # Убедитесь, что Dockerfile в mongo
     container_name: data-db
     ports:
       - "27017:27017"
@@ -64,7 +68,9 @@ services:
 
   # PostgreSQL для auth_service
   auth-db:
-    image: postgres:16
+    build:
+      context: ./auth_service/database
+      dockerfile: Dockerfile
     container_name: auth-db
     environment:
       - POSTGRES_USER=root
@@ -79,7 +85,9 @@ services:
 
   # PostgreSQL для user_service
   user-db:
-    image: postgres:16
+    build:
+      context: ./user_service/database
+      dockerfile: Dockerfile  # Убедитесь, что Dockerfile в database
     container_name: user-db
     environment:
       - POSTGRES_USER=root

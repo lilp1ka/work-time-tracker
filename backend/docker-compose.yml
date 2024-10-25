@@ -1,0 +1,122 @@
+version: '3.8'
+
+services:
+  # Auth-service
+  auth-service:
+    build:
+      context: ./auth_service
+      dockerfile: Dockerfile  # Убедитесь, что Dockerfile в auth_service
+    container_name: auth_service
+    ports:
+      - "8001:8000"
+    depends_on:
+      - auth-db
+      - redis
+    environment:
+      - DATABASE_URL=postgresql://root:root@auth-db:5432/auth_db
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    networks:
+      - backend-network
+
+  # User-service
+  user-service:
+    build:
+      context: ./user_service
+      dockerfile: Dockerfile  # Убедитесь, что Dockerfile в user_service
+    container_name: user_service
+    ports:
+      - "8002:8000"
+    depends_on:
+      - user-db
+      - redis
+    environment:
+      - DATABASE_URL=postgresql://root:root@user-db:5432/user_db
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    networks:
+      - backend-network
+
+  # Data Processing Service
+  data-processing-service:
+    build:
+      context: ./data_processing_service
+      dockerfile: Dockerfile  # Убедитесь, что Dockerfile в data_processing_service
+    container_name: data_processing_service
+    ports:
+      - "8003:8000"
+    depends_on:
+      - mongo-service
+      - redis
+    environment:
+      - DATABASE_URL=mongodb://mongo-service:27017/data_db
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    networks:
+      - backend-network
+
+  # MongoDB service for data processing
+  mongo-service:
+    build:
+      context: ./data_processing_service/mongo
+      dockerfile: Dockerfile  # Убедитесь, что Dockerfile в mongo
+    container_name: data-db
+    ports:
+      - "27017:27017"
+    networks:
+      - backend-network
+
+  # PostgreSQL для auth_service
+  auth-db:
+    build:
+      context: ./auth_service/database
+      dockerfile: Dockerfile
+    container_name: auth-db
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=auth_db
+    ports:
+      - "5551:5432"
+    volumes:
+      - auth-db-data:/var/lib/postgresql/data
+    networks:
+      - backend-network
+
+  # PostgreSQL для user_service
+  user-db:
+    build:
+      context: ./user_service/database
+      dockerfile: Dockerfile  # Убедитесь, что Dockerfile в database
+    container_name: user-db
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=user_db
+    ports:
+      - "5552:5432"
+    volumes:
+      - user-db-data:/var/lib/postgresql/data
+    networks:
+      - backend-network
+
+  # Redis service
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "5555:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - backend-network
+
+# Определяем тома для базы данных
+volumes:
+  auth-db-data:
+  user-db-data:
+  redis-data:
+
+# Определяем сеть для микросервисов
+networks:
+  backend-network:

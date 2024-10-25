@@ -2,7 +2,7 @@
 FROM python:3.11
 
 # Установка рабочей директории
-WORKDIR /user
+WORKDIR /service
 
 # Копирование файла с зависимостями
 COPY requirements.txt .

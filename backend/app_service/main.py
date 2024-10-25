@@ -6,11 +6,9 @@ app = FastAPI()
 
 @app.get("/")
 async def read_root():
-    print("Запрос пришёл на /")
-    return {"message": "Hello, FastAPI!"}
+    return {52: "52"}
 
 
-# Определим модель данных для POST-запроса
 class Item(BaseModel):
     name: str
     description: str = None  # Поле необязательное

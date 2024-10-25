@@ -1,0 +1,97 @@
+version: '3.8'
+
+services:
+  # Auth-service
+  auth-service:
+    build:
+      context: ./auth_service
+    container_name: auth_service
+    ports:
+      - "8001:8000"
+    depends_on:
+      - auth-db
+      - redis
+    environment:
+      - DATABASE_URL=postgresql://root:root@auth-db:5432/auth_db
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+
+  # User-service
+  user-service:
+    build:
+      context: ./user_service
+    container_name: user_service
+    ports:
+      - "8002:8000"
+    depends_on:
+      - user-db
+      - redis
+    environment:
+      - DATABASE_URL=postgresql://root:root@user-db:5432/user_db
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+
+  # Data Processing Service
+  data-processing-service:
+    build:
+      context: ./data_processing_service
+    container_name: data_processing_service
+    ports:
+      - "8003:8000"
+    depends_on:
+      - data-db
+      - redis
+    environment:
+      - DATABASE_URL=mongodb://data-db:27017/data_db  # Используем MongoDB
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+
+  # PostgreSQL для auth_service
+  auth-db:
+    image: postgres:16
+    container_name: auth-db
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=auth_db
+    ports:
+      - "5551:5432"
+    volumes:
+      - auth-db-data:/var/lib/postgresql/data
+
+  # PostgreSQL для user_service
+  user-db:
+    image: postgres:16
+    container_name: user-db
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=user_db
+    ports:
+      - "5552:5432"
+    volumes:
+      - user-db-data:/var/lib/postgresql/data
+
+  # MongoDB для data_processing_service
+  data-db:
+    image: mongo:latest
+    container_name: data-db
+    ports:
+      - "27017:27017"
+    volumes:
+      - data-db-data:/data/db
+    command: bash -c "apt-get update && apt-get install -y mongodb-org-shell && mongod"  # Redis сервис для всех микросервисов
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "5555:6379"
+    volumes:
+      - redis-data:/data
+
+# Определяем тома для базы данных
+volumes:
+  auth-db-data:
+  user-db-data:
+  data-db-data:
+  redis-data:

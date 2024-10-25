@@ -43,12 +43,22 @@ services:
     ports:
       - "8003:8000"
     depends_on:
-      - data-db
+      - mongo-service  # Изменено на mongo-service
       - redis
     environment:
-      - DATABASE_URL=mongodb://data-db:27017/data_db  # Используем MongoDB
+      - DATABASE_URL=mongodb://mongo-service:27017/data_db  # Изменено на mongo-service
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+    networks:
+      - backend-network
+
+  # MongoDB service for data processing
+  mongo-service:
+    build:
+      context: ./data_processing_service/mongo
+    container_name: data-db
+    ports:
+      - "27017:27017"
     networks:
       - backend-network
 
@@ -82,17 +92,7 @@ services:
     networks:
       - backend-network
 
-  # MongoDB для data_processing_service
-  data-db:
-    image: mongo:latest
-    container_name: data-db
-    ports:
-      - "27017:27017"
-    volumes:
-      - data-db-data:/data/db
-    networks:
-      - backend-network
-
+  # Redis service
   redis:
     image: redis:latest
     container_name: redis
@@ -107,7 +107,6 @@ services:
 volumes:
   auth-db-data:
   user-db-data:
-  data-db-data:
   redis-data:
 
 # Определяем сеть для микросервисов

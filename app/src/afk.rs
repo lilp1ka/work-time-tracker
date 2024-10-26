@@ -59,3 +59,4 @@ pub fn is_afk(last_state: Arc<Mutex<LastState>>, active_app: Arc<Mutex<ActiveApp
         }
     }
 }
+

@@ -18,13 +18,14 @@ pub struct ActiveApp {
 }
 
 pub fn active_window(app: Arc<Mutex<ActiveApp>>, log_list_n: Arc<Mutex<Vec<ActiveApp>>>) {
-    let active_app = app.lock().unwrap();
+    let mut active_app = app.lock().unwrap();
     //temp
     let mut log_list = log_list_n.lock().unwrap();
     {
         match get_active_window() {
             Ok(window) => {
                 if active_app.title != window.title {
+                    active_app.duration = active_app.time.elapsed().unwrap();
                     log_list.push(active_app.clone());
 
                     // drop(log_list);

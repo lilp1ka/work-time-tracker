@@ -9,17 +9,17 @@ use std::{
 };
 
 pub fn logs_serialize(log_list: Vec<ActiveApp>) -> String {
-    // let log_list = log_list.lock().unwrap();
-    let serialized = serde_json::to_string(&*log_list.clone()).unwrap();
-    // send_logs(serialized);
+    let serialized = serde_json::to_string(&log_list).unwrap();
+    
     println!("==========================log_list: \n {:#?}", log_list);
     serialized
 }
 
 pub async fn send_logs(log_list: Vec<ActiveApp>) -> Result<Response, Error> {
-    let logs_serialized = logs_serialize(log_list);
-    let logs_json = json!({"log" : logs_serialized} );
+    // let logs_serialized = logs_serialize(log_list);
+    let logs_json = json!({"log" : log_list} );
     println!("TO SEND: {}", logs_json);
+    // println!("LOGZ ZERIALIZED: {}", logs_serialized);
 
     let client = Client::new();
 

@@ -30,61 +30,6 @@ fn main() {
         daemons::linux_daemonize::daemonize();
     }
 
-
-    let tray_thread = thread::spawn(move || {
-
-    
-        let cursor = Cursor::new(include_bytes!("icon.png"));
-        let decoder = png::Decoder::new(cursor);
-        let mut reader = decoder.read_info().unwrap();
-        let info = reader.info().clone();
-        let buff_size = info.width as usize * info.height as usize * 4 as usize;
-        let mut buff = vec![0; buff_size];
-        reader.next_frame(&mut buff);
-    
-        let icon = IconSource::Data {
-            data: buff,
-            height: info.height as i32, 
-            width: info.width as i32,  
-        };
-    
-        let mut tray = TrayItem::new("work-time-tracker", icon).unwrap();
-    
-        tray.add_label("example label").unwrap();
-    
-        let (tx, rx) = mpsc::sync_channel::<Message>(2);
-    
-        let update_tx = tx.clone();
-        let quit_tx = tx.clone();
-        let id_menu = tray
-        .inner_mut()
-        .add_menu_item_with_id("Open App", move ||{
-            update_tx.send(Message::OpenG).unwrap()
-        }).unwrap();
-        tray.add_menu_item("Quit", move || {
-            quit_tx.send(Message::Quit);
-        });
-        
-        loop {
-            match rx.recv(){
-                Ok(Message::OpenG) => {
-                    println!("openg");
-                }
-                Ok(Message::Quit) => {
-                    println!("quit");
-                }
-                Ok(Message::Update) => {
-                    println!("update");
-                }
-                Err(e) => {
-                    println!("tray err: {}", e);
-                } 
-            }
-        }
-    
-        
-    });
-
     
 
     //device state & links
@@ -164,6 +109,61 @@ fn main() {
         }
     });
 
+    let tray_thread = thread::spawn(move || {
+
+    
+        let cursor = Cursor::new(include_bytes!("icon.png"));
+        let decoder = png::Decoder::new(cursor);
+        let mut reader = decoder.read_info().unwrap();
+        let info = reader.info().clone();
+        let buff_size = info.width as usize * info.height as usize * 4 as usize;
+        let mut buff = vec![0; buff_size];
+        reader.next_frame(&mut buff);
+    
+        let icon = IconSource::Data {
+            data: buff,
+            height: info.height as i32, 
+            width: info.width as i32,  
+        };
+    
+        let mut tray = TrayItem::new("work-time-tracker", icon).unwrap();
+    
+        tray.add_label("example label").unwrap();
+    
+        let (tx, rx) = mpsc::sync_channel::<Message>(2);
+    
+        let update_tx = tx.clone();
+        let quit_tx = tx.clone();
+        let id_menu = tray
+        .inner_mut()
+        .add_menu_item_with_id("Open App", move ||{
+            update_tx.send(Message::OpenG).unwrap()
+        }).unwrap();
+        tray.add_menu_item("Quit", move || {
+            quit_tx.send(Message::Quit);
+        });
+        
+        loop {
+            match rx.recv(){
+                Ok(Message::OpenG) => {
+                    println!("openg");
+                }
+                Ok(Message::Quit) => {
+                    println!("quit");
+                    std::process::exit(0)
+                }
+                Ok(Message::Update) => {
+                    println!("update");
+                }
+                Err(e) => {
+                    println!("tray err: {}", e);
+                } 
+            }
+        }
+    
+        
+    });
+
     tray_thread.join().unwrap();
     active_window_handle.join().unwrap();
     is_afk_handle.join().unwrap();
@@ -172,13 +172,16 @@ fn main() {
 }
 
 
-//короче проблема с настройкой привелегий, то пид файл не открывается то еще чета.
-//скорее всего буду запускать по дефолту от юзера. оставляю в рабочей версии все пока что
-//таска: либо решить все таки чета с привелегиями либо прописать парс актив юзера + его группы 
-//что бы под ним демон воркал
-//
-//
-//
+//если нету доступа к серверу логлист не обновляется
+//хотя может и обновляется просто отсылает не обновленный
+
+//допиздячить крутое модное логирование в какой нить файлик типа если
+//не отправляется то пиздануть в файлик а потом с новыми логами когда уже будут отправляться 
+//объеденить туда сюда короче подумать над этой хуйней 
+
+
+//еще допиздячить короч что бы если нету соеденения типа ошибка на отрпавке
+//лого в трее было красное
 //
 //
 //

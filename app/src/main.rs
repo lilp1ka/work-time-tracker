@@ -8,15 +8,15 @@ mod daemons{
 use active_app::{active_window, ActiveApp};
 use afk::{is_afk, LastState};
 use device_query::{DeviceQuery, DeviceState};
-use networking::{logs_serialize, send_logs};
+use networking::{send_logs};
 use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
 use std::time::{Duration, SystemTime};
 use tokio::runtime::Runtime;
 use tray_item::{TrayItem, IconSource};
-use std::io::Cursor;
-
-
+use std::io::{Cursor, Read};
+use std::fs::File;
+use active_app::logs_from_file;
 enum Message {
     OpenG,
     Quit,
@@ -26,9 +26,9 @@ enum Message {
 fn main() { 
 
 
-    if cfg!(target_os = "linux"){
-        daemons::linux_daemonize::daemonize();
-    }
+    // if cfg!(target_os = "linux"){
+    //     daemons::linux_daemonize::daemonize();
+    // }
 
     
 
@@ -86,8 +86,17 @@ fn main() {
         let rt_inner = rt_clone.lock().unwrap();
         if log_list_inner.len() >= 3 {
 
-            let logs_to_send = log_list_inner.clone();
+            let mut logs_to_send = log_list_inner.clone();
 
+            let smth = logs_from_file();
+            println!("SMTH: {:#?}", smth);
+
+            // if let Ok(logs_from_file) = logs_from_file(){
+            //     logs_to_send.extend(logs_from_file);
+            //     println!("MERGED LOGS FROM FILE");
+            // } else {
+            //     println!("ERRROR MERGING LOGS FORM FILE");
+            // }
 
             let send_result = rt_inner.block_on(async move{
                 send_logs(logs_to_send).await
@@ -109,62 +118,62 @@ fn main() {
         }
     });
 
-    let tray_thread = thread::spawn(move || {
+    // let tray_thread = thread::spawn(move || {
 
     
-        let cursor = Cursor::new(include_bytes!("icon.png"));
-        let decoder = png::Decoder::new(cursor);
-        let mut reader = decoder.read_info().unwrap();
-        let info = reader.info().clone();
-        let buff_size = info.width as usize * info.height as usize * 4 as usize;
-        let mut buff = vec![0; buff_size];
-        reader.next_frame(&mut buff);
+    //     let cursor = Cursor::new(include_bytes!("icon.png"));
+    //     let decoder = png::Decoder::new(cursor);
+    //     let mut reader = decoder.read_info().unwrap();
+    //     let info = reader.info().clone();
+    //     let buff_size = info.width as usize * info.height as usize * 4 as usize;
+    //     let mut buff = vec![0; buff_size];
+    //     reader.next_frame(&mut buff);
     
-        let icon = IconSource::Data {
-            data: buff,
-            height: info.height as i32, 
-            width: info.width as i32,  
-        };
+    //     let icon = IconSource::Data {
+    //         data: buff,
+    //         height: info.height as i32, 
+    //         width: info.width as i32,  
+    //     };
     
-        let mut tray = TrayItem::new("work-time-tracker", icon).unwrap();
+    //     let mut tray = TrayItem::new("work-time-tracker", icon).unwrap();
     
-        tray.add_label("example label").unwrap();
+    //     tray.add_label("example label").unwrap();
     
-        let (tx, rx) = mpsc::sync_channel::<Message>(2);
+    //     let (tx, rx) = mpsc::sync_channel::<Message>(2);
     
-        let update_tx = tx.clone();
-        let quit_tx = tx.clone();
-        let id_menu = tray
-        .inner_mut()
-        .add_menu_item_with_id("Open App", move ||{
-            update_tx.send(Message::OpenG).unwrap()
-        }).unwrap();
-        tray.add_menu_item("Quit", move || {
-            quit_tx.send(Message::Quit);
-        });
+    //     let update_tx = tx.clone();
+    //     let quit_tx = tx.clone();
+    //     let id_menu = tray
+    //     .inner_mut()
+    //     .add_menu_item_with_id("Open App", move ||{
+    //         update_tx.send(Message::OpenG).unwrap()
+    //     }).unwrap();
+    //     tray.add_menu_item("Quit", move || {
+    //         quit_tx.send(Message::Quit);
+    //     });
         
-        loop {
-            match rx.recv(){
-                Ok(Message::OpenG) => {
-                    println!("openg");
-                }
-                Ok(Message::Quit) => {
-                    println!("quit");
-                    std::process::exit(0)
-                }
-                Ok(Message::Update) => {
-                    println!("update");
-                }
-                Err(e) => {
-                    println!("tray err: {}", e);
-                } 
-            }
-        }
+    //     loop {
+    //         match rx.recv(){
+    //             Ok(Message::OpenG) => {
+    //                 println!("openg");
+    //             }
+    //             Ok(Message::Quit) => {
+    //                 println!("quit");
+    //                 std::process::exit(0)
+    //             }
+    //             Ok(Message::Update) => {
+    //                 println!("update");
+    //             }
+    //             Err(e) => {
+    //                 println!("tray err: {}", e);
+    //             } 
+    //         }
+    //     }
     
         
-    });
+    // });
 
-    tray_thread.join().unwrap();
+    // tray_thread.join().unwrap();
     active_window_handle.join().unwrap();
     is_afk_handle.join().unwrap();
     logger_handle.join().unwrap();
@@ -182,6 +191,22 @@ fn main() {
 
 //еще допиздячить короч что бы если нету соеденения типа ошибка на отрпавке
 //лого в трее было красное
+//
+//
+//
+
+
+//файл пустой
+//попытка отправки логов
+//{      если файл пустой - 
+//
+//
+//}
+//
+//
+//
+//
+//
 //
 //
 //

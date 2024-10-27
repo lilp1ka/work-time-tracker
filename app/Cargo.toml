@@ -17,6 +17,7 @@ image = "0.25"
 gtk = "0.18.1"
 tray-item = { version = "0.10", features = ["ksni"] }
 png = "0.17"
-
+thiserror = "1.0.65"
+bincode = "1.3.3"
 
 

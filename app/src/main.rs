@@ -5,6 +5,8 @@ mod networking;
 mod daemons{
     pub mod linux_daemonize;
 }
+use std::fs::OpenOptions;
+use active_app::{b_logs_from_file, b_logs_to_file};
 use active_app::{active_window, ActiveApp};
 use afk::{is_afk, LastState};
 use device_query::{DeviceQuery, DeviceState};
@@ -16,7 +18,7 @@ use tokio::runtime::Runtime;
 use tray_item::{TrayItem, IconSource};
 use std::io::{Cursor, Read};
 use std::fs::File;
-use active_app::logs_from_file;
+// use active_app::logs_from_file;
 enum Message {
     OpenG,
     Quit,
@@ -88,15 +90,12 @@ fn main() {
 
             let mut logs_to_send = log_list_inner.clone();
 
-            let smth = logs_from_file();
+            let smth = b_logs_from_file();
             println!("SMTH: {:#?}", smth);
 
-            // if let Ok(logs_from_file) = logs_from_file(){
-            //     logs_to_send.extend(logs_from_file);
-            //     println!("MERGED LOGS FROM FILE");
-            // } else {
-            //     println!("ERRROR MERGING LOGS FORM FILE");
-            // }
+            if !smth.is_empty(){
+                logs_to_send.extend(smth);
+            }
 
             let send_result = rt_inner.block_on(async move{
                 send_logs(logs_to_send).await
@@ -108,6 +107,11 @@ fn main() {
                     log_list_inner.clear();
                     println!("[DEBUG] CLEAR VECTOR");
                     println!("[DEBUG] {:#?}", log_list_inner);
+                    let _ = OpenOptions::new()
+                        .write(true)
+                        .create(true)
+                        .truncate(true) //clean file before rewrite
+                        .open("/tmp/wtt-logs.bin");
                     // вместо этой хуйни добавить мпск колл в хуйзнаеткуда бля короче
                 }//что бы логи почистились по колу,и нужно что бы хуйзнаеткуда было не асинхронное,шоб не блочило поток,иначе пиздец
                 Err(err) => {
@@ -184,29 +188,11 @@ fn main() {
 //если нету доступа к серверу логлист не обновляется
 //хотя может и обновляется просто отсылает не обновленный
 
-//допиздячить крутое модное логирование в какой нить файлик типа если
-//не отправляется то пиздануть в файлик а потом с новыми логами когда уже будут отправляться 
-//объеденить туда сюда короче подумать над этой хуйней 
+
+//короче сделал вроде пиздато с логами в бин но чета все равно только 3 отправляется я хз поч
+//бля или логается ваще хуй пойми в пизду короче
 
 
-//еще допиздячить короч что бы если нету соеденения типа ошибка на отрпавке
-//лого в трее было красное
-//
-//
-//
 
-
-//файл пустой
-//попытка отправки логов
-//{      если файл пустой - 
-//
-//
-//}
-//
-//
-//
-//
-//
-//
-//
-//
+//перенести короче нахуй запись в бин если нету ответа от сервера а не логать по кд в 
+//бин и при этом держать в оперативе 

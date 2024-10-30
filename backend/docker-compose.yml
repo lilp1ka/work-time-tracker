@@ -119,9 +119,10 @@ services:
 volumes:
   auth-db-data:
   user-db-data:
-  redis-data:
   mongo-data:
+  redis-data:
 
 # Определяем сеть для микросервисов
 networks:
   backend-network:
+    driver: bridge

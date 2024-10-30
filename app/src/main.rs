@@ -5,8 +5,8 @@ mod networking;
 mod daemons{
     pub mod linux_daemonize;
 }
-use std::fs::OpenOptions;
-use active_app::{b_logs_from_file, b_logs_to_file};
+use std::fs::{self, OpenOptions};
+use active_app::{b_logs_from_file, b_logs_to_file, clear_file};
 use active_app::{active_window, ActiveApp};
 use afk::{is_afk, LastState};
 use device_query::{DeviceQuery, DeviceState};
@@ -18,6 +18,8 @@ use tokio::runtime::Runtime;
 use tray_item::{TrayItem, IconSource};
 use std::io::{Cursor, Read};
 use std::fs::File;
+use log::{info, warn, error, debug};
+
 // use active_app::logs_from_file;
 enum Message {
     OpenG,
@@ -27,7 +29,8 @@ enum Message {
 
 fn main() { 
 
-
+    env_logger::init();
+    info!("Logger initializated");
     // if cfg!(target_os = "linux"){
     //     daemons::linux_daemonize::daemonize();
     // }
@@ -82,45 +85,91 @@ fn main() {
         thread::sleep(Duration::from_millis(500));
     });
                 
-    let logger_handle = thread::spawn(move || loop { // FIX тут пофиксить потому шо пиздец хуйня какая то все зависит от цифры 
-        let log_list_clone = Arc::clone(&log_list_clone2); // на 2 строчки ниже. походу передается в асинк рт и все пиздец 
-        let mut log_list_inner = log_list_clone.lock().unwrap(); //там зависает нахуй и финита ля комедиа (хинт; посмотреть арки в токио как юзать и припиздошить)
+    let logger_handle = thread::spawn(move || loop { 
+        let log_list_clone = Arc::clone(&log_list_clone2); 
         let rt_inner = rt_clone.lock().unwrap();
-        if log_list_inner.len() >= 3 {
 
-            let mut logs_to_send = log_list_inner.clone();
-
-            let smth = b_logs_from_file();
-            println!("SMTH: {:#?}", smth);
-
-            if !smth.is_empty(){
-                logs_to_send.extend(smth);
+        let mut logs_to_send = {
+            let mut log_list_inner = log_list_clone.lock().unwrap(); 
+            if log_list_inner.len() < 3{
+                drop(log_list_inner);
+                continue;
             }
+            let logs = log_list_inner.clone();
+            log_list_inner.clear();
+            logs
+        };
 
-            let send_result = rt_inner.block_on(async move{
-                send_logs(logs_to_send).await
-            });
+        let logs_from_file = b_logs_from_file();
 
-            match send_result{
-                Ok(response) => {
-                    println!("GOT RESPONSE {:#?}", response);
-                    log_list_inner.clear();
-                    println!("[DEBUG] CLEAR VECTOR");
-                    println!("[DEBUG] {:#?}", log_list_inner);
-                    let _ = OpenOptions::new()
-                        .write(true)
-                        .create(true)
-                        .truncate(true) //clean file before rewrite
-                        .open("/tmp/wtt-logs.bin");
-                    // вместо этой хуйни добавить мпск колл в хуйзнаеткуда бля короче
-                }//что бы логи почистились по колу,и нужно что бы хуйзнаеткуда было не асинхронное,шоб не блочило поток,иначе пиздец
-                Err(err) => {
-                    eprintln!("GOT ERROR {}", err);
-                    thread::sleep(Duration::from_secs(5));
-                }
-            }
+        if !logs_from_file.is_empty(){
+            logs_to_send.extend(logs_from_file);
+            debug!("[logs_to_send + logs_from_file] => {:#?}", logs_to_send);
         }
-    });
+        let logs_copy = logs_to_send.clone();
+        let send_result = rt_inner.block_on(async move{
+            send_logs(logs_to_send).await
+        });
+
+
+
+        match send_result{
+            Ok(response) => {
+                info!("[send_result] response OK => {:#?}", response);
+                let is_cleared = clear_file("/tmp/wtt-logs.bin");
+                debug!("Is file logs-file cleared -> {:#?}", is_cleared);
+                let content = fs::read_to_string("/tmp/wtt-logs.bin").unwrap();
+                info!("FILE wtt-logs.bin cleared => {content}");
+            },
+            Err(err) => {
+                debug!("Rewriting logs {:#?} to logs-file", logs_copy);
+                b_logs_to_file(logs_copy);
+                error!("[send_result] error => {:#?}", err);
+                thread::sleep(Duration::from_secs(5));
+            },
+        }
+
+
+        });
+
+        // if log_list_inner.len() >= 3 {
+
+        //     let mut logs_to_send = log_list_inner.clone();
+        //     let logs_to_send_clone = log_list_inner.clone();
+        //     let smth = b_logs_from_file();
+        //     println!("SMTH: {:#?}", smth);
+
+        //     if !smth.is_empty(){
+        //         logs_to_send.extend(smth);
+        //     }
+
+        //     let send_result = rt_inner.block_on(async move{
+        //         send_logs(logs_to_send).await
+        //     });
+
+        //     match send_result{
+        //         Ok(response) => {
+        //             println!("GOT RESPONSE {:#?}", response);
+        //             log_list_inner.clear();
+        //             println!("[DEBUG] CLEAR VECTOR");
+        //             println!("[DEBUG] {:#?}", log_list_inner);
+        //             let _ = OpenOptions::new()
+        //                 .write(true)
+        //                 .create(true)
+        //                 .truncate(true) //clean file before rewrite
+        //                 .open("/tmp/wtt-logs.bin");
+        //             // вместо этой хуйни добавить мпск колл в хуйзнаеткуда бля короче
+        //         }//что бы логи почистились по колу,и нужно что бы хуйзнаеткуда было не асинхронное,шоб не блочило поток,иначе пиздец
+        //         Err(err) => {
+        //             println!("Writing logs to binfile: {}",err);
+        //             b_logs_to_file(logs_to_send_clone);
+        //             eprintln!("GOT ERROR {}", err);
+        //             thread::sleep(Duration::from_secs(5));
+        //         }
+
+        //     }
+        // }
+    // });
 
     // let tray_thread = thread::spawn(move || {
 
@@ -183,6 +232,7 @@ fn main() {
     logger_handle.join().unwrap();
 
 }
+
 
 
 //если нету доступа к серверу логлист не обновляется

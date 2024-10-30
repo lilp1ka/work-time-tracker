@@ -8,6 +8,7 @@ use std::{
 };
 use std::io::Write;
 
+use log::{info, warn, error, debug};
 // pub fn logs_serialize(log_list: Vec<ActiveApp>) -> String {
 //     let serialized = serde_json::to_string(&log_list).unwrap();
     
@@ -18,7 +19,7 @@ use std::io::Write;
 pub async fn send_logs(log_list: Vec<ActiveApp>) -> Result<Response, Error> {
     let logs_json = json!({"log" : log_list} );
 
-    println!("TO SEND: {}", logs_json);
+    // println!("TO SEND: {}", logs_json);
 
     let client = Client::new();
 
@@ -27,17 +28,9 @@ pub async fn send_logs(log_list: Vec<ActiveApp>) -> Result<Response, Error> {
         .json(&logs_json)
         .send()
         .await;
-    println!("RESPONSE: {:#?}", response);
+    // println!("RESPONSE: {:#?}", response);
 
     response
 }
 
 
-
-//логи с оперативы беру,если тхт не пустой,мерджу,отправляю
-//если не отправляется переписываю нахуй всё в тхт
-//если отправляется вайпаю тхт
-//
-//
-//
-//

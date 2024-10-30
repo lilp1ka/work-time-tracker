@@ -7,6 +7,7 @@ use std::time::{Duration, SystemTime};
 
 use serde::{Deserialize, Serialize};
 
+use log::{info, warn, error, debug};
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ActiveApp {
     pub name: String,
@@ -31,20 +32,14 @@ pub fn active_window(app: Arc<Mutex<ActiveApp>>, log_list_n: Arc<Mutex<Vec<Activ
                 if active_app.title != window.title {
                     active_app.duration = active_app.time.elapsed().unwrap();
                     log_list.push(active_app.clone());
-                    
-                    let smth2 = b_logs_to_file(log_list.clone());
-                    println!("SMTH2: {:#?}", smth2);
-                    // drop(log_list);
-
-                    // logs_serialize(log_list.clone()); //TEMP
-                    //                                   // println!("LOG LIST ========================================================== \n {:#?}", log_list);
-                    drop(active_app);
-                    let mut active_app = app.lock().unwrap();
 
                     active_app.name = window.app_name;
                     active_app.title = window.title;
                     active_app.time = SystemTime::now();
-                    println!("REALACTIVEAPP: {}", active_app.title);
+                    active_app.duration = Duration::from_secs(0);
+                    active_app.is_afk = false;
+                    active_app.afk_moments = Vec::new();
+                    debug!("REALACTIVEAPP: {}", active_app.title);
                 }
             }
             Err(_) => {
@@ -53,6 +48,7 @@ pub fn active_window(app: Arc<Mutex<ActiveApp>>, log_list_n: Arc<Mutex<Vec<Activ
         }
     }
 }
+
 
 
 // fn log_to_file(log_list: Vec<ActiveApp>) {
@@ -114,7 +110,7 @@ pub fn b_logs_to_file(mut logs: Vec<ActiveApp>) -> io::Result<()>{
         .write(true)
         .create(true)
         .truncate(true) //clean file before rewrite
-        .open(path).inspect_err(|err| println!("Logger error -> {}", err))?;
+        .open(path).inspect_err(|err| error!("Logger error -> {}", err))?;
 
     let logs_from_file = b_logs_from_file();
     if !logs_from_file.is_empty(){
@@ -127,6 +123,14 @@ pub fn b_logs_to_file(mut logs: Vec<ActiveApp>) -> io::Result<()>{
     Ok(())
 }
 
+
+pub fn clear_file(path: &str) -> io::Result<File>{
+    OpenOptions::new()
+                    .write(true)
+                    .create(true)
+                    .truncate(true)
+                    .open("/tmp/wtt-logs.bin")
+}
 
 #[derive(Debug, Error)]
 pub enum FileLogErr{
@@ -145,3 +149,7 @@ pub enum FileLogErr{
 
 
 //4to takoe LOGER ASPEKT!!!!!!!!!!!!!!!!!!!!!!!!!!!! PAMAGITE
+
+
+//перенести короче нахуй запись в бин если нету ответа от сервера а не логать по кд в 
+//бин и при этом держать в оперативе 

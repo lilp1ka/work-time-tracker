@@ -4,6 +4,7 @@ use std::fs::remove_file;
 use daemonize::{Daemonize, Group, User};
 use uzers::{get_current_gid, get_current_groupname, get_current_uid, get_current_username};
 
+use log::{info, warn, error, debug};
 
 pub fn daemonize(){
     if cfg!(target_os = "linux"){

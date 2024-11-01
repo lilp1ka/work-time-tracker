@@ -9,6 +9,7 @@ use std::fs::{self, OpenOptions};
 use active_app::{b_logs_from_file, b_logs_to_file, clear_file};
 use active_app::{active_window, ActiveApp};
 use afk::{is_afk, LastState};
+use bincode::ErrorKind;
 use device_query::{DeviceQuery, DeviceState};
 use networking::{send_logs};
 use std::sync::{mpsc, Arc, Mutex};
@@ -19,6 +20,10 @@ use tray_item::{TrayItem, IconSource};
 use std::io::{Cursor, Read};
 use std::fs::File;
 use log::{info, warn, error, debug};
+
+use std::io::{self};
+
+use std::io::ErrorKind as IOErrorKind;
 
 // use active_app::logs_from_file;
 enum Message {
@@ -31,9 +36,9 @@ fn main() {
 
     env_logger::init();
     info!("Logger initializated");
-    // if cfg!(target_os = "linux"){
-    //     daemons::linux_daemonize::daemonize();
-    // }
+    if cfg!(target_os = "linux"){
+        daemons::linux_daemonize::daemonize();
+    }
 
     
 
@@ -118,7 +123,24 @@ fn main() {
                 info!("[send_result] response OK => {:#?}", response);
                 let is_cleared = clear_file("/tmp/wtt-logs.bin");
                 debug!("Is file logs-file cleared -> {:#?}", is_cleared);
-                let content = fs::read_to_string("/tmp/wtt-logs.bin").unwrap();
+
+                //вайпнуть потом,энивэй дебаг шляпа
+                let content = match fs::read_to_string("/tmp/wtt-logs.bin"){
+                    Ok(content) => content,
+                    Err(ref e) if e.kind() == IOErrorKind::NotFound => {
+                        error!("Not found /tmp/wtt-logs.bin file. Creating... ");
+                        File::create("/tmp/wtt-logs.bin");
+                        String::new()
+                    },
+                    Err(ref e) if e.kind() == IOErrorKind::PermissionDenied => {
+                        error!("Permission Denied, please, change your /tmp/wtt-logs.bin file permissions \n [chmod 644]");
+                        String::new()
+                    },
+                    Err(e) => {
+                        error!("An unexcpected error ocured at logger_handle thread {e}");
+                        String::new()
+                    }
+                };
                 info!("FILE wtt-logs.bin cleared => {content}");
             },
             Err(err) => {
@@ -132,101 +154,62 @@ fn main() {
 
         });
 
-        // if log_list_inner.len() >= 3 {
-
-        //     let mut logs_to_send = log_list_inner.clone();
-        //     let logs_to_send_clone = log_list_inner.clone();
-        //     let smth = b_logs_from_file();
-        //     println!("SMTH: {:#?}", smth);
-
-        //     if !smth.is_empty(){
-        //         logs_to_send.extend(smth);
-        //     }
-
-        //     let send_result = rt_inner.block_on(async move{
-        //         send_logs(logs_to_send).await
-        //     });
-
-        //     match send_result{
-        //         Ok(response) => {
-        //             println!("GOT RESPONSE {:#?}", response);
-        //             log_list_inner.clear();
-        //             println!("[DEBUG] CLEAR VECTOR");
-        //             println!("[DEBUG] {:#?}", log_list_inner);
-        //             let _ = OpenOptions::new()
-        //                 .write(true)
-        //                 .create(true)
-        //                 .truncate(true) //clean file before rewrite
-        //                 .open("/tmp/wtt-logs.bin");
-        //             // вместо этой хуйни добавить мпск колл в хуйзнаеткуда бля короче
-        //         }//что бы логи почистились по колу,и нужно что бы хуйзнаеткуда было не асинхронное,шоб не блочило поток,иначе пиздец
-        //         Err(err) => {
-        //             println!("Writing logs to binfile: {}",err);
-        //             b_logs_to_file(logs_to_send_clone);
-        //             eprintln!("GOT ERROR {}", err);
-        //             thread::sleep(Duration::from_secs(5));
-        //         }
-
-        //     }
-        // }
-    // });
-
-    // let tray_thread = thread::spawn(move || {
+    let tray_thread = thread::spawn(move || {
 
     
-    //     let cursor = Cursor::new(include_bytes!("icon.png"));
-    //     let decoder = png::Decoder::new(cursor);
-    //     let mut reader = decoder.read_info().unwrap();
-    //     let info = reader.info().clone();
-    //     let buff_size = info.width as usize * info.height as usize * 4 as usize;
-    //     let mut buff = vec![0; buff_size];
-    //     reader.next_frame(&mut buff);
+        let cursor = Cursor::new(include_bytes!("icon.png"));
+        let decoder = png::Decoder::new(cursor);
+        let mut reader = decoder.read_info().unwrap();
+        let info = reader.info().clone();
+        let buff_size = info.width as usize * info.height as usize * 4 as usize;
+        let mut buff = vec![0; buff_size];
+        reader.next_frame(&mut buff);
     
-    //     let icon = IconSource::Data {
-    //         data: buff,
-    //         height: info.height as i32, 
-    //         width: info.width as i32,  
-    //     };
+        let icon = IconSource::Data {
+            data: buff,
+            height: info.height as i32, 
+            width: info.width as i32,  
+        };
     
-    //     let mut tray = TrayItem::new("work-time-tracker", icon).unwrap();
+        let mut tray = TrayItem::new("work-time-tracker", icon).unwrap();
     
-    //     tray.add_label("example label").unwrap();
+        tray.add_label("example label").unwrap();
     
-    //     let (tx, rx) = mpsc::sync_channel::<Message>(2);
+        let (tx, rx) = mpsc::sync_channel::<Message>(2);
     
-    //     let update_tx = tx.clone();
-    //     let quit_tx = tx.clone();
-    //     let id_menu = tray
-    //     .inner_mut()
-    //     .add_menu_item_with_id("Open App", move ||{
-    //         update_tx.send(Message::OpenG).unwrap()
-    //     }).unwrap();
-    //     tray.add_menu_item("Quit", move || {
-    //         quit_tx.send(Message::Quit);
-    //     });
+        let update_tx = tx.clone();
+        let quit_tx = tx.clone();
+        let id_menu = tray
+        .inner_mut()
+        .add_menu_item_with_id("Open App", move ||{
+            update_tx.send(Message::OpenG).unwrap()
+        }).unwrap();
+        tray.add_menu_item("Quit", move || {
+            quit_tx.send(Message::Quit);
+        });
         
-    //     loop {
-    //         match rx.recv(){
-    //             Ok(Message::OpenG) => {
-    //                 println!("openg");
-    //             }
-    //             Ok(Message::Quit) => {
-    //                 println!("quit");
-    //                 std::process::exit(0)
-    //             }
-    //             Ok(Message::Update) => {
-    //                 println!("update");
-    //             }
-    //             Err(e) => {
-    //                 println!("tray err: {}", e);
-    //             } 
-    //         }
-    //     }
+        loop {
+            match rx.recv(){
+                Ok(Message::OpenG) => {
+                    println!("openg");
+                }
+                Ok(Message::Quit) => {
+                    println!("quit");
+                    std::process::exit(0)
+                }
+                Ok(Message::Update) => {
+                    println!("update");
+                }
+                Err(e) => {
+                    println!("tray err: {}", e);
+                } 
+            }
+        }
     
         
-    // });
+    });
 
-    // tray_thread.join().unwrap();
+    tray_thread.join().unwrap();
     active_window_handle.join().unwrap();
     is_afk_handle.join().unwrap();
     logger_handle.join().unwrap();

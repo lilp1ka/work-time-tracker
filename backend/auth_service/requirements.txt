@@ -7,3 +7,5 @@ psycopg2-binary
 databases
 pydantic_settings
 uvicorn
+passlib
+pydantic[email]

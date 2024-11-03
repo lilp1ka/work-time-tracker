@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, Boolean, TIMESTAMP, ForeignKey, UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import func
+from core.utils import pwd_context
 
 Base = declarative_base()
 
@@ -15,6 +16,9 @@ class User(Base):
     is_active = Column(Boolean, default=False)
     is_admin = Column(Boolean, default=False)
     created_at = Column(TIMESTAMP, server_default=func.current_timestamp())
+
+    def check_password(self, password: str) -> bool:
+        return pwd_context.verify(password, self.hashed_password)
 
 
 class Token(Base):

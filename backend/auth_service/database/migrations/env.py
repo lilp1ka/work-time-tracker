@@ -8,7 +8,7 @@ from alembic import context
 # Добавить корневую папку проекта в PYTHONPATH
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../..')))
 
-from backend.auth_service.database.models import Base
+from .database.models import Base
 
 config = context.config
 

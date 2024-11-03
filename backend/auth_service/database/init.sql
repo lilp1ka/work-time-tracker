@@ -7,7 +7,13 @@ CREATE TABLE IF NOT EXISTS users (
     is_admin BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+INSERT INTO users (username, email, hashed_password, is_active, is_admin)
+VALUES
+('testuser1', 'testuser1@example.com', 'hashed_password_1', TRUE, FALSE);
 
+INSERT INTO users (username, email, hashed_password, is_active, is_admin)
+VALUES
+('testuser2', 'testuser2@example.com', 'hashed_password_2', FALSE, TRUE);
 
 CREATE TABLE IF NOT EXISTS sessions (
     id SERIAL PRIMARY KEY,
@@ -18,3 +24,10 @@ CREATE TABLE IF NOT EXISTS sessions (
     expires_at TIMESTAMP NOT NULL,
     valid BOOLEAN DEFAULT TRUE
 );
+INSERT INTO sessions (user_id, device_info, refresh_token, expires_at, valid)
+VALUES
+(1, 'Chrome on Windows', 'refresh_token_1', NOW() + INTERVAL '30 days', TRUE);
+
+INSERT INTO sessions (user_id, device_info, refresh_token, expires_at, valid)
+VALUES
+(2, 'Firefox on MacOS', 'refresh_token_2', NOW() + INTERVAL '30 days', TRUE);

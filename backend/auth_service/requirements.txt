@@ -9,3 +9,4 @@ pydantic_settings
 uvicorn
 passlib
 pydantic[email]
+fastapi_mail

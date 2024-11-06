@@ -22,3 +22,8 @@ class UserResponse(BaseModel):
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
+
+class UserChange(BaseModel):
+    email: EmailStr
+    username: str
+    password: str

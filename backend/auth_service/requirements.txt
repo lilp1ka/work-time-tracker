@@ -10,3 +10,4 @@ uvicorn
 passlib
 pydantic[email]
 fastapi_mail
+redis

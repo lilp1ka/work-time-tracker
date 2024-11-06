@@ -27,3 +27,8 @@ class UserChange(BaseModel):
     email: EmailStr
     username: str
     password: str
+
+class EmailConfirm(BaseModel):
+    id: int
+    email: EmailStr
+    username: str

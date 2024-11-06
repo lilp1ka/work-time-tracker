@@ -21,11 +21,6 @@ services:
     networks:
       - backend-network
 
-  # Other services...
-
-    networks:
-      - backend-network
-
   # User-service
   user-service:
     build:

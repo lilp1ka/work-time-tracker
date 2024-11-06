@@ -23,14 +23,14 @@ conf = ConnectionConfig(
 redis_client = RedisClient()
 
 
-async def generate_link():
+async def generate_link(email):
     token = generate_token_for_email()
-    confirmation_url = f"http://localhost:8001/auth/confirm-email?token={token}"
+    confirmation_url = f"http://localhost:8001/auth/confirm-email?token={token}&email={email}"
     return confirmation_url, token
 
 
 async def send_confirmation_email(email: str):
-    confirmation_url, token = await generate_link()
+    confirmation_url, token = await generate_link(email)
     message = MessageSchema(
         subject="Email Confirmation",
         recipients=[email],

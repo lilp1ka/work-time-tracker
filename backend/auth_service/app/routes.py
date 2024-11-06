@@ -44,6 +44,7 @@ async def register_user(background_tasks: BackgroundTasks, user: UserCreate, db:
 
 @router.get("/confirm-email")
 async def confirm_email(token: str, db: AsyncSession = Depends(get_db)):
+
     return {"message": "Email confirmed successfully"}
 
 

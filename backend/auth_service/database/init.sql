@@ -5,15 +5,16 @@ CREATE TABLE IF NOT EXISTS users (
     hashed_password VARCHAR(255) NOT NULL,
     is_active BOOLEAN DEFAULT FALSE,
     is_admin BOOLEAN DEFAULT FALSE,
+    email_is_verifed BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-INSERT INTO users (username, email, hashed_password, is_active, is_admin)
+INSERT INTO users (username, email, hashed_password, is_active, is_admin, email_is_verifed)
 VALUES
-('testuser1', 'testuser1@example.com', 'hashed_password_1', TRUE, FALSE);
+('testuser1', 'testuser1@example.com', 'hashed_password_1', TRUE, FALSE, FALSE);
 
-INSERT INTO users (username, email, hashed_password, is_active, is_admin)
+INSERT INTO users (username, email, hashed_password, is_active, is_admin, email_is_verifed)
 VALUES
-('testuser2', 'testuser2@example.com', 'hashed_password_2', FALSE, TRUE);
+('testuser2', 'testuser2@example.com', 'hashed_password_2', FALSE, TRUE, TRUE);
 
 CREATE TABLE IF NOT EXISTS sessions (
     id SERIAL PRIMARY KEY,

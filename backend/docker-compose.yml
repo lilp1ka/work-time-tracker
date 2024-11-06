@@ -1,5 +1,6 @@
 version: '3.8'
 
+
 services:
   # Auth-service
   auth-service:
@@ -16,6 +17,12 @@ services:
       - DATABASE_URL=postgresql://root:root@auth-db:5432/auth_db
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - PYTHONPATH=/auth_service:/auth_service/app:/auth_service/backend
+    networks:
+      - backend-network
+
+  # Other services...
+
     networks:
       - backend-network
 

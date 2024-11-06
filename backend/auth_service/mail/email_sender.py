@@ -1,5 +1,8 @@
 from fastapi import BackgroundTasks
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
+from starlette.responses import JSONResponse
+
+from auth_service.mail.utils import generate_token_for_email
 
 conf = ConnectionConfig(
     MAIL_USERNAME="axomjak@gmail.com",
@@ -13,12 +16,22 @@ conf = ConnectionConfig(
     VALIDATE_CERTS=True
 )
 
-async def send_confirmation_email(email: str, token: str, background_tasks: BackgroundTasks):
+
+async def generate_link():
+    token = generate_token_for_email()
+    confirmation_url = f"http://localhost:8001/confirm-email?token={token}"
+    return confirmation_url
+
+
+async def send_confirmation_email(email: str):
     message = MessageSchema(
         subject="Email Confirmation",
         recipients=[email],
-        body=f"Please confirm your email by clicking on the following link: http://localhost:8000/auth/confirm-email?token={token}",
+        body=f"Please confirm your email by clicking on the following link: {await generate_link()}",
         subtype="html"
     )
+    print(message)
+
     fm = FastMail(conf)
-    background_tasks.add_task(fm.send_message, message)
+    await fm.send_message(message)
+    return JSONResponse(status_code=200, content={"message": "Email has been sent"})

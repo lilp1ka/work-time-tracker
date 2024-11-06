@@ -11,14 +11,13 @@ from auth_service.core.utils import get_password_hash
 from auth_service.database.schemas import UserResponse, UserCreate, UserLogin, UserChange
 from auth_service.database.models import User
 from auth_service.database.database import get_db
-from auth_service.mail.utils import generate_token_for_email
 from auth_service.mail.email_sender import send_confirmation_email
 
 router = APIRouter()
 
 
 @router.post("/register", response_model=UserResponse)
-async def register_user(background_tasks: BackgroundTasks, user: UserCreate, db: AsyncSession = Depends(get_db)):
+async def register_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
     existing_user = await db.execute(select(User).where(or_(User.email == user.email, User.username == user.username)))
     existing_user = existing_user.scalar()
     if existing_user:
@@ -35,7 +34,6 @@ async def register_user(background_tasks: BackgroundTasks, user: UserCreate, db:
 
     hashed_password = get_password_hash(user.password)
 
-
     new_user = User(
         username=user.username,
         email=user.email,
@@ -46,11 +44,7 @@ async def register_user(background_tasks: BackgroundTasks, user: UserCreate, db:
     db.add(new_user)
     await db.commit()
     await db.refresh(new_user)
-
-    token = generate_token_for_email()
-    confirmation_url = f"http://localhost:8001/confirm-email?token={token}"
-    print(confirmation_url)
-    await send_confirmation_email(new_user.email, confirmation_url, background_tasks)
+    await send_confirmation_email(new_user.email)
 
     return new_user
 

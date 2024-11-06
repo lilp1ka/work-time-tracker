@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, Boolean, TIMESTAMP, ForeignKey, UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import func
-from core.utils import pwd_context
+from auth_service.core.utils import pwd_context
 
 Base = declarative_base()
 

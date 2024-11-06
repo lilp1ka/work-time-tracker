@@ -1,13 +1,17 @@
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../..')))
+
 from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.schemas import UserCreate, UserResponse, UserLogin
-from database.models import User
-from database.database import get_db
-from core.utils import get_password_hash
-from mail.email_sender import send_confirmation_email
-from mail.utils import generate_token_for_email
+from auth_service.core.utils import get_password_hash
+from auth_service.database.schemas import UserResponse, UserCreate, UserLogin
+from auth_service.database.models import User
+from auth_service.database.database import get_db
+from auth_service.mail.utils import generate_token_for_email
+from auth_service.mail.email_sender import send_confirmation_email
 
 router = APIRouter()
 

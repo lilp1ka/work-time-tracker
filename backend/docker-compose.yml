@@ -16,6 +16,8 @@ services:
       - DATABASE_URL=postgresql://root:root@auth-db:5432/auth_db
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - PYTHONPATH=/auth_service:/auth_service/app:/auth_service
+
     networks:
       - backend-network
 

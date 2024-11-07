@@ -82,9 +82,9 @@ class Login(Email):
     async def login_user(self, email: str, password: str, db: AsyncSession = Depends(get_db)):
         user = await self.find_user_by_email(email, db)
         if not user:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User not found")
+            raise HTTPException(status_code=400, detail="User not found")
         if not user.check_password(password):
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUESTD, detail='Incorrect password')
+            raise HTTPException(status_code=400, detail='Incorrect password')
 
         return user
 
@@ -105,9 +105,6 @@ class ChangeUserData:
     async def reset_password(self):
         pass
 
-    @router.post("/change-user-data", response_model=UserChange)
-    async def change_user_data(self, db: AsyncSession = Depends(get_db), user: UserChange = Depends(get_password_hash)):
-        pass
 
 
 login_instance = Login()

@@ -21,14 +21,6 @@ CREATE TABLE IF NOT EXISTS sessions (
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     device_info VARCHAR(255),
     refresh_token VARCHAR(512) NOT NULL,
-    issued_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    expires_at TIMESTAMP NOT NULL,
-    valid BOOLEAN DEFAULT TRUE
-);
-INSERT INTO sessions (user_id, device_info, refresh_token, expires_at, valid)
-VALUES
-(1, 'Chrome on Windows', 'refresh_token_1', NOW() + INTERVAL '30 days', TRUE);
+    expires_at TIMESTAMP NOT NULL
 
-INSERT INTO sessions (user_id, device_info, refresh_token, expires_at, valid)
-VALUES
-(2, 'Firefox on MacOS', 'refresh_token_2', NOW() + INTERVAL '30 days', TRUE);
+);

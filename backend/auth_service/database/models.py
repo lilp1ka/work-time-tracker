@@ -30,6 +30,4 @@ class Token(Base):
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     device_info = Column(String(255))
     refresh_token = Column(String(512), nullable=False)
-    issued_at = Column(TIMESTAMP, server_default=func.current_timestamp())
     expires_at = Column(TIMESTAMP, nullable=False)
-    valid = Column(Boolean, default=True)

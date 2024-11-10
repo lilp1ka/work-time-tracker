@@ -7,7 +7,6 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str
 
-
 class UserResponse(BaseModel):
     id: int
     username: str
@@ -23,12 +22,23 @@ class UserLogin(BaseModel):
     email: EmailStr
     password: str
 
-class UserChange(BaseModel):
-    email: EmailStr
-    username: str
-    password: str
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str
+    expires_in: int
+    refresh_token: str
 
-class EmailConfirm(BaseModel):
-    id: int
-    email: EmailStr
-    username: str
+    class Config:
+        from_attributes = True
+
+class TokenRefresh(BaseModel):
+    refresh_token: str
+
+class TokenRefreshResponse(BaseModel):
+    access_token: str
+    token_type: str
+    expires_in: int
+
+    class Config:
+        from_attributes = True
+

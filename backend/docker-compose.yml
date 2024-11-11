@@ -1,11 +1,12 @@
 version: '3.8'
 
+
 services:
   # Auth-service
   auth-service:
     build:
       context: ./auth_service
-      dockerfile: Dockerfile  # Убедитесь, что Dockerfile в auth_service
+      dockerfile: Dockerfile
     container_name: auth_service
     ports:
       - "8001:8000"
@@ -16,6 +17,7 @@ services:
       - DATABASE_URL=postgresql://root:root@auth-db:5432/auth_db
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - PYTHONPATH=/auth_service:/auth_service/app:/auth_service/backend
     networks:
       - backend-network
 
@@ -23,7 +25,7 @@ services:
   user-service:
     build:
       context: ./user_service
-      dockerfile: Dockerfile  # Убедитесь, что Dockerfile в user_service
+      dockerfile: Dockerfile
     container_name: user_service
     ports:
       - "8002:8000"
@@ -41,7 +43,7 @@ services:
   data-processing-service:
     build:
       context: ./data_processing_service
-      dockerfile: Dockerfile  # Убедитесь, что Dockerfile в data_processing_service
+      dockerfile: Dockerfile
     container_name: data_processing_service
     ports:
       - "8003:8000"
@@ -58,11 +60,14 @@ services:
   # MongoDB service for data processing
   mongo-service:
     build:
-      context: ./data_processing_service/mongo
-      dockerfile: Dockerfile  # Убедитесь, что Dockerfile в mongo
+      context: ./data_processing_service/database
+      dockerfile: Dockerfile
     container_name: data-db
     ports:
       - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+      - ./data_processing_service/database/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
     networks:
       - backend-network
 
@@ -87,7 +92,7 @@ services:
   user-db:
     build:
       context: ./user_service/database
-      dockerfile: Dockerfile  # Убедитесь, что Dockerfile в database
+      dockerfile: Dockerfile
     container_name: user-db
     environment:
       - POSTGRES_USER=root
@@ -97,6 +102,7 @@ services:
       - "5552:5432"
     volumes:
       - user-db-data:/var/lib/postgresql/data
+      - ./user_service/database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     networks:
       - backend-network
 
@@ -115,8 +121,10 @@ services:
 volumes:
   auth-db-data:
   user-db-data:
+  mongo-data:
   redis-data:
 
 # Определяем сеть для микросервисов
 networks:
   backend-network:
+    driver: bridge

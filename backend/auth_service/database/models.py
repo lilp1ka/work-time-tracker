@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String, Boolean, TIMESTAMP, ForeignKey, UniqueConstraint
+from sqlalchemy import Column, Integer, String, Boolean, TIMESTAMP, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from passlib.context import CryptContext
 
@@ -17,17 +18,19 @@ class User(Base):
     created_at = Column(TIMESTAMP, server_default=func.current_timestamp())
     email_is_verified = Column(Boolean, default=False)
 
+    tokens = relationship("Token", back_populates="user")
 
     def check_password(self, password: str) -> bool:
         pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
         return pwd_context.verify(password, self.hashed_password)
 
-
 class Token(Base):
-    __tablename__ = 'sessions'
+    __tablename__ = 'tokens'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     device_info = Column(String(255))
     refresh_token = Column(String(512), nullable=False)
     expires_at = Column(TIMESTAMP, nullable=False)
+
+    user = relationship("User", back_populates="tokens")

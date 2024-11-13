@@ -176,3 +176,9 @@ async def get_user_by_id(user_id: int, db: AsyncSession = Depends(get_db)):
     return await user_instance.get_user_by_id(user_id, db)
 
 # разобратся с response_model
+# дописать ендроинты
+# покрыть тестами
+# навести порядки
+# разоьарться с файлом jwt_handler
+# в теории перенести все что связано с почтой в отедльный сервис чтобы не нагружать auth
+

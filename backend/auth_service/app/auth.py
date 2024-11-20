@@ -1,6 +1,7 @@
 import sys
 import os
 
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../..')))
 
 from fastapi import HTTPException, Depends, status
@@ -11,7 +12,6 @@ from auth_service.database.schemas import UserCreate
 from auth_service.database.models import User
 from auth_service.database.database import get_db
 from auth_service.mail.email_sender import send_confirmation_email
-
 
 
 class Register:
@@ -62,6 +62,5 @@ class Login:
 
         return user
 
-
-login_instance = Login()
 register_instance = Register()
+login_instance = Login()

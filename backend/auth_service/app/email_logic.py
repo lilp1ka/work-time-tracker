@@ -2,14 +2,13 @@ from fastapi import Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from auth_service.app.routes import users_router as router
 from auth_service.core.redis_client import redisClient
 from auth_service.database.models import User
 from auth_service.database.database import get_db
 
 class Email:
     def __init__(self):
-        self.router = router
+        pass
 
     @staticmethod
     async def find_user_by_email(email: str, db: AsyncSession = Depends(get_db)):

@@ -1,5 +1,4 @@
-from routes import users_router, change_router
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from auth_service.database.models import User
@@ -8,7 +7,7 @@ from auth_service.database.database import get_db
 
 class ChangeUserData:
     def __init__(self):
-        self.router = users_router
+        pass
 
     async def change_password(self):
         pass
@@ -28,7 +27,7 @@ class ChangeUserData:
 
 class UserData:
     def __init__(self):
-        self.router = APIRouter()
+        pass
     @staticmethod
     async def get_user(user_id: int, db: AsyncSession = Depends(get_db)):
         result = await db.execute(select(User).filter(User.id == user_id))
@@ -58,3 +57,6 @@ class UserData:
         if not user:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
         return user
+
+user_instance = UserData()
+change_user_instance = ChangeUserData()

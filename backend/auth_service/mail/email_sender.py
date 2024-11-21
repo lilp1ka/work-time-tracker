@@ -5,7 +5,7 @@ from starlette.responses import JSONResponse
 from auth_service.core.redis_client import RedisClient
 
 load_dotenv()
-from auth_service.core.utils import generate_token_for_email
+from auth_service.core.utils import generate_token_for_email, generate_password
 
 MAIL_USERNAME, MAIL_PASSWORD, MAIL_FROM = os.getenv("MAIL_USERNAME"), os.getenv("MAIL_PASSWORD"), os.getenv("MAIL_FROM")
 conf = ConnectionConfig(
@@ -40,6 +40,17 @@ async def send_confirmation_email(email: str):
     print(confirmation_url)
     await redis_client.set_token(email, token, expire=7200)
     await redis_client.close()
+    fm = FastMail(conf)
+    await fm.send_message(message)
+    return JSONResponse(status_code=200, content={"message": "Email has been sent"})
+
+async def send_reset_password_email(email: str, new_password: str):
+    message = MessageSchema(
+        subject="Reset Password",
+        recipients=[email],
+        body=f"Your new password: {new_password}",
+        subtype="html"
+    )
     fm = FastMail(conf)
     await fm.send_message(message)
     return JSONResponse(status_code=200, content={"message": "Email has been sent"})

@@ -11,11 +11,8 @@ users_router = APIRouter()
 
 
 @users_router.get("/get-my-user/", response_model=UserResponse)
-async def get_my_user(request: Request, db: AsyncSession = Depends(get_db)):
-    token = request.headers.get("Authorization")
-    payload = decode_token(token)
-    user_id = payload.get("id")
-    return await user_instance.get_user(user_id, db)
+async def get_my_user():
+    pass
 
 
 @users_router.get("/get-user/{user_id}", response_model=UserResponse)

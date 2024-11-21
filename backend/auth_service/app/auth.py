@@ -1,15 +1,14 @@
 import sys
 import os
 
-
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../..')))
 
-from fastapi import HTTPException, Depends, status
+from fastapi import HTTPException, Depends, status, Request
 from sqlalchemy import select, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from auth_service.core.utils import get_password_hash
 from auth_service.database.schemas import UserCreate
-from auth_service.database.models import User
+from auth_service.database.models import User, Token
 from auth_service.database.database import get_db
 from auth_service.mail.email_sender import send_confirmation_email
 
@@ -62,5 +61,20 @@ class Login:
 
         return user
 
+class Logout:
+    @staticmethod
+    async def logout(request: Request, db: AsyncSession = Depends(get_db)):
+        device_info = request.headers.get("User-Agent")
+        token = await db.execute(
+            select(Token).filter(Token.device_info == device_info)
+        )
+        token = token.scalar()
+        if not token:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token not found")
+        await db.delete(token)
+        await db.commit()
+        return {"message": "Logged out successfully"}
+
+logout_instance = Logout()
 register_instance = Register()
 login_instance = Login()

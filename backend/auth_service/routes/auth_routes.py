@@ -2,20 +2,19 @@ from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from auth_service.database.schemas import UserResponse, UserCreate, UserLogin, TokenResponse
 from auth_service.database.database import get_db
-from auth_service.app.jwt_handler import create_access_token, create_refresh_token
 from auth_service.database.models import Token
-from auth_service.app.auth import register_instance, login_instance
+from auth_service.app.jwt_handler import create_access_token, create_refresh_token
+from auth_service.app.auth import register_instance, login_instance, logout_instance
+from auth_service.core.security import oauth2_scheme  # Import here
 from datetime import datetime, timedelta
 from sqlalchemy import select
 
 auth_router = APIRouter()
 
-
 @auth_router.post("/register", response_model=UserResponse)
 async def register_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
     user = await register_instance.register_user(user, db)
     return user
-
 
 @auth_router.post("/login", response_model=TokenResponse)
 async def login_user(user: UserLogin, request: Request, db: AsyncSession = Depends(get_db)):
@@ -56,16 +55,6 @@ async def login_user(user: UserLogin, request: Request, db: AsyncSession = Depen
         refresh_token=refresh_token
     )
 
-
 @auth_router.post("/logout")
 async def logout(request: Request, db: AsyncSession = Depends(get_db)):
-    device_info = request.headers.get("User-Agent")
-    token = await db.execute(
-        select(Token).filter(Token.device_info == device_info)
-    )
-    token = token.scalar()
-    if not token:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token not found")
-    await db.delete(token)
-    await db.commit()
-    return {"message": "Logged out successfully"}
+    return await logout_instance.logout(request, db)

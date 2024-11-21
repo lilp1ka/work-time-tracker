@@ -5,9 +5,11 @@ from auth_service.database.database import get_db
 from auth_service.database.models import Token
 from auth_service.app.jwt_handler import create_access_token, create_refresh_token
 from auth_service.app.auth import register_instance, login_instance, logout_instance
+from auth_service.core.security import oauth2_scheme
 from datetime import datetime, timedelta
 from sqlalchemy import select
 from fastapi.security import OAuth2PasswordRequestForm
+
 auth_router = APIRouter()
 
 @auth_router.post("/register", response_model=UserResponse)

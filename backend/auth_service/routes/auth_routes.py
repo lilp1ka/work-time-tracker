@@ -5,10 +5,9 @@ from auth_service.database.database import get_db
 from auth_service.database.models import Token
 from auth_service.app.jwt_handler import create_access_token, create_refresh_token
 from auth_service.app.auth import register_instance, login_instance, logout_instance
-from auth_service.core.security import oauth2_scheme  # Import here
 from datetime import datetime, timedelta
 from sqlalchemy import select
-
+from fastapi.security import OAuth2PasswordRequestForm
 auth_router = APIRouter()
 
 @auth_router.post("/register", response_model=UserResponse)
@@ -58,3 +57,19 @@ async def login_user(user: UserLogin, request: Request, db: AsyncSession = Depen
 @auth_router.post("/logout")
 async def logout(request: Request, db: AsyncSession = Depends(get_db)):
     return await logout_instance.logout(request, db)
+
+@auth_router.post("/token", response_model=TokenResponse)
+async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
+    user = await login_instance.login_user(form_data.username, form_data.password, db)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+
+    access_token = create_access_token(data={"id": user.id, "email": user.email, "username": user.username})
+    refresh_token = create_refresh_token(data={"id": user.id, "email": user.email, "username": user.username})
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "expires_in": 30 * 60,
+        "refresh_token": refresh_token
+    }

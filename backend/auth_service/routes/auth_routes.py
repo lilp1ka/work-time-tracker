@@ -23,6 +23,7 @@ async def login_user(user: UserLogin, request: Request, db: AsyncSession = Depen
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
 
+
     access_token = create_access_token(data={"id": user.id, "email": user.email, "username": user.username,
                                              "email_is_verified": user.email_is_verified})
     refresh_token = create_refresh_token(data={"id": user.id, "email": user.email, "username": user.username,
@@ -62,7 +63,7 @@ async def logout(request: Request, db: AsyncSession = Depends(get_db), token: st
 
 @auth_router.post("/token", response_model=TokenResponse)
 async def login_for_access_token(
-    form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db), token: str = Depends(oauth2_scheme)):
+    form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
     user = await login_instance.login_user(form_data.username, form_data.password, db)
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")

@@ -1,3 +1,6 @@
+import logging
+from sqlalchemy import delete
+from auth_service.database.models import Token
 from fastapi import Depends, HTTPException, status
 from pydantic import EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -6,7 +9,7 @@ from fastapi import Depends, HTTPException, status
 from jose import JWTError, jwt
 from auth_service.app.jwt_handler import SECRET_KEY, ALGORITHM
 from auth_service.core.security import oauth2_scheme
-from auth_service.core.utils import generate_password
+from auth_service.core.utils import generate_password, get_password_hash
 from auth_service.database.models import User
 from auth_service.database.database import get_db
 from auth_service.mail.email_sender import send_reset_password_email
@@ -39,15 +42,6 @@ class UserData:
         return user
 
     @staticmethod
-    async def get_user_by_id(user_id: int, db: AsyncSession = Depends(get_db)):
-        result = await db.execute(select(User).filter(User.id == user_id))
-        user = result.scalar()
-        if not user:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-        return user
-
-
-    @staticmethod
     async def get_current_user_id(token: str = Depends(oauth2_scheme)):
         credentials_exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -68,17 +62,15 @@ class ChangeUserData(UserData):
         user = await self.get_user(user_id, db)
         if not user:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-
-        user.password = new_password
+        new_hashed_password = get_password_hash(new_password)
+        user.hashed_password = new_hashed_password
         db.add(user)
         await db.commit()
+        logging.info("Password updated successfully")
         return {"message": "Password updated successfully"}
 
     async def change_email(self, user_id: int, new_email: EmailStr, db: AsyncSession = Depends(get_db)):
         user = await self.get_user(user_id, db)
-        if not user:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-
         user.email = new_email
         db.add(user)
         await db.commit()
@@ -86,9 +78,6 @@ class ChangeUserData(UserData):
 
     async def change_username(self, user_id: int, new_username: str, db: AsyncSession = Depends(get_db)):
         user = await self.get_user(user_id, db)
-        if not user:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-
         user.username = new_username
         db.add(user)
         await db.commit()
@@ -98,32 +87,24 @@ class ChangeUserData(UserData):
         user = await self.get_user(user_id, db)
         if not user:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-
+        await db.execute(
+            delete(Token).where(Token.user_id == user_id)
+        )
         await db.delete(user)
         await db.commit()
         return {"message": "User deleted successfully"}
-
     async def reset_password(self, user_id: int, db: AsyncSession = Depends(get_db)):
         user = await self.get_user(user_id, db)
-        if not user:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-
         new_password = generate_password()
-        print(new_password)
-        user.password = new_password
+        new_hashed_password = get_password_hash(new_password)
+        user.hashed_password = new_hashed_password
         db.add(user)
         await db.commit()
         await send_reset_password_email(user.email, new_password)
-        return {"message": "Password reset successfully"}
-
-
-
+        return {"message": "Password reset successfully, check your email for the new password"}
 user_instance = UserData()
 change_user_instance = ChangeUserData()
 
-# get_my_user
-# change методы
-# написать методы для change через json body и обязательную аутификацию через токен чтобы были example в fastapi docs
 # написать тесты для всех методов
-# понять как доставать username в других микросервисах с jwt token
-# понять как делать запросы к другим микросервисам
+# написать сброс пароля по ссылке
+

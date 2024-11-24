@@ -34,16 +34,18 @@ class TokenRefreshResponse(BaseModel):
     token_type: str
     expires_in: int
 
-class ChangeUserData(BaseModel):
-    password: str
-    email: EmailStr
-    username: str
-    reset_password: str
-    delete_user: str
+class ChangePasswordRequest(BaseModel):
+    user_id: int
+    new_password: str
 
-class UserData(BaseModel):
-    get_user: str
-    get_all_users: str
-    get_user_by_username: str
-    get_user_by_id: str
+class ChangeEmailRequest(BaseModel):
+    user_id: int
+    new_email: str
+
+class ChangeUsernameRequest(BaseModel):
+    user_id: int
+    new_username: str
+
+class DeleteUserRequest(BaseModel):
+    user_id: int
 

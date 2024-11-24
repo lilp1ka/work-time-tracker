@@ -1,4 +1,3 @@
-# Example usage in auth_service/routes/change_routes.py
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from auth_service.database.schemas import ChangePasswordRequest, ChangeEmailRequest, ChangeUsernameRequest, DeleteUserRequest

@@ -3,11 +3,9 @@ from pydantic import EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from auth_service.app.jwt_handler import SECRET_KEY, ALGORITHM
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
+from auth_service.core.security import oauth2_scheme
 from auth_service.core.utils import generate_password
 from auth_service.database.models import User
 from auth_service.database.database import get_db

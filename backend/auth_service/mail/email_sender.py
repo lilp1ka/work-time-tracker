@@ -5,7 +5,7 @@ from starlette.responses import JSONResponse
 from auth_service.core.redis_client import RedisClient
 
 load_dotenv()
-from auth_service.core.utils import generate_token_for_email, generate_password
+from auth_service.core.utils import generate_token_for_email
 
 MAIL_USERNAME, MAIL_PASSWORD, MAIL_FROM = os.getenv("MAIL_USERNAME"), os.getenv("MAIL_PASSWORD"), os.getenv("MAIL_FROM")
 conf = ConnectionConfig(
@@ -25,7 +25,7 @@ redis_client = RedisClient()
 
 async def generate_link(email):
     token = generate_token_for_email()
-    confirmation_url = f"http://localhost:8001/user/confirm-email?token={token}&email={email}"
+    confirmation_url = f"http://localhost:8001/email/confirm-email?token={token}&email={email}"
     return confirmation_url, token
 
 

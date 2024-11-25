@@ -34,14 +34,6 @@ class UserData:
         return users
 
     @staticmethod
-    async def get_user_by_username(username: str, db: AsyncSession = Depends(get_db)):
-        result = await db.execute(select(User).filter(User.username == username))
-        user = result.scalar()
-        if not user:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-        return user
-
-    @staticmethod
     async def get_current_user_id(token: str = Depends(oauth2_scheme)):
         credentials_exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -56,6 +48,13 @@ class UserData:
         except JWTError:
             raise credentials_exception
         return user_id
+
+    @staticmethod
+    async def get_all_users_were_is_active(db: AsyncSession = Depends(get_db)):
+        users = await db.execute(
+            select(User).where(User.is_active == True)
+        )
+        return users.scalars().all()
 
 class ChangeUserData(UserData):
     async def change_password(self, user_id: int, new_password: str, db: AsyncSession = Depends(get_db)):
@@ -93,6 +92,8 @@ class ChangeUserData(UserData):
         await db.delete(user)
         await db.commit()
         return {"message": "User deleted successfully"}
+
+
     async def reset_password(self, user_id: int, db: AsyncSession = Depends(get_db)):
         user = await self.get_user(user_id, db)
         new_password = generate_password()
@@ -102,9 +103,13 @@ class ChangeUserData(UserData):
         await db.commit()
         await send_reset_password_email(user.email, new_password)
         return {"message": "Password reset successfully, check your email for the new password"}
+
+
 user_instance = UserData()
 change_user_instance = ChangeUserData()
 
 # написать тесты для всех методов
 # написать сброс пароля по ссылке
-
+# что такое транзакции и как их использовать
+# разобраться со строкой         user = await self.get_user(user_id, db)
+# написать метод где у всех юзеров is_active = true

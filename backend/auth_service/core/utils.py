@@ -16,7 +16,7 @@ def generate_token_for_email() -> str:
 
 def generate_password():
     length = random.randint(16,24)
-    characters = string.ascii_letters + string.digits + string.punctuation
+    characters = string.ascii_letters + string.digits
     password = ''.join(random.choice(characters) for _ in range(length))
     return password
 

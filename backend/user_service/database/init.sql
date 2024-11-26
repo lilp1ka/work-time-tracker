@@ -10,7 +10,6 @@ CREATE TABLE IF NOT EXISTS teams (
     name_group VARCHAR(255) NOT NULL UNIQUE,
     creator_id INTEGER REFERENCES users(id) NOT NULL,
     admin_id INTEGER REFERENCES users(id) NOT NULL,
-    type_subscibe VARCHAR(255) NOT NULL,
     is_active BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

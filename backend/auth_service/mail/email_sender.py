@@ -29,28 +29,61 @@ async def generate_link(email):
     return confirmation_url, token
 
 
+# async def send_confirmation_email(email: str):
+#     confirmation_url, token = await generate_link(email)
+#     message = MessageSchema(
+#         subject="Email Confirmation",
+#         recipients=[email],
+#         body=f"Please confirm your email by clicking on the following link: {confirmation_url}",
+#         subtype="html"
+#     )
+#     print(confirmation_url)
+#     await redis_client.set_token(email, token, expire=7200)
+#     await redis_client.close()
+#     fm = FastMail(conf)
+#     await fm.send_message(message)
+#     return JSONResponse(status_code=200, content={"message": "Email has been sent"})
+#
+# async def send_resset_password_email(email: str, new_password: str):
+#     message = MessageSchema(
+#         subject="Reset Password",
+#         recipients=[email],
+#         body=f"Your new password: {new_password}",
+#         subtype="html"
+#     )
+#     fm = FastMail(conf)
+#     await fm.send_message(message)
+#     return JSONResponse(status_code=200, content={"message": "Email has been sent"})
+async def send_resset_password_email(email: str, new_password: str):
+    with open('/auth_service/mail/templates/password_reset.html') as file:
+        html_content = file.read().replace('{{ new_password }}', new_password)
+
+    message = MessageSchema(
+        subject="Reset Password",
+        recipients=[email],
+        body=html_content,
+        subtype="html"
+    )
+
+    fm = FastMail(conf)
+    await fm.send_message(message)
+    return JSONResponse(status_code=200, content={"message": "Email has been sent"})
+
+
 async def send_confirmation_email(email: str):
     confirmation_url, token = await generate_link(email)
+    with open('/auth_service/mail/templates/registration_confirmation.html') as file:
+        html_content = file.read().replace('{{ confirmation_url }}', confirmation_url)
+
     message = MessageSchema(
         subject="Email Confirmation",
         recipients=[email],
-        body=f"Please confirm your email by clicking on the following link: {confirmation_url}",
+        body=html_content,
         subtype="html"
     )
     print(confirmation_url)
     await redis_client.set_token(email, token, expire=7200)
     await redis_client.close()
-    fm = FastMail(conf)
-    await fm.send_message(message)
-    return JSONResponse(status_code=200, content={"message": "Email has been sent"})
-
-async def send_reset_password_email(email: str, new_password: str):
-    message = MessageSchema(
-        subject="Reset Password",
-        recipients=[email],
-        body=f"Your new password: {new_password}",
-        subtype="html"
-    )
     fm = FastMail(conf)
     await fm.send_message(message)
     return JSONResponse(status_code=200, content={"message": "Email has been sent"})

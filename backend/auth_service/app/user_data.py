@@ -12,7 +12,7 @@ from auth_service.core.security import oauth2_scheme
 from auth_service.core.utils import generate_password, get_password_hash
 from auth_service.database.models import User
 from auth_service.database.database import get_db
-from auth_service.mail.email_sender import send_reset_password_email
+from auth_service.mail.email_sender import send_resset_password_email
 
 
 class UserData:
@@ -101,7 +101,7 @@ class ChangeUserData(UserData):
         user.hashed_password = new_hashed_password
         db.add(user)
         await db.commit()
-        await send_reset_password_email(user.email, new_password)
+        await send_resset_password_email(user.email, new_password)
         return {"message": "Password reset successfully, check your email for the new password"}
 
 
@@ -110,6 +110,3 @@ change_user_instance = ChangeUserData()
 
 # написать тесты для всех методов
 # написать сброс пароля по ссылке
-# что такое транзакции и как их использовать
-# разобраться со строкой         user = await self.get_user(user_id, db)
-# написать метод где у всех юзеров is_active = true

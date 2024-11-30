@@ -1,7 +1,6 @@
 import logging
 from sqlalchemy import delete
 from auth_service.database.models import Token
-from fastapi import Depends, HTTPException, status
 from pydantic import EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select

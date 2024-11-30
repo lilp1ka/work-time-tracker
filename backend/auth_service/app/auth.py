@@ -11,6 +11,9 @@ from auth_service.database.schemas import UserCreate
 from auth_service.database.models import User, Token
 from auth_service.database.database import get_db
 from auth_service.mail.email_sender import send_confirmation_email
+from auth_service.database.models import Token
+from auth_service.app.jwt_handler import SECRET_KEY, ALGORITHM
+from jose import JWTError, jwt
 
 
 class Register:
@@ -58,6 +61,28 @@ class Login:
             raise HTTPException(status_code=400, detail="User not found")
         if not user.check_password(password):
             raise HTTPException(status_code=400, detail='Incorrect password')
+
+        return user
+
+    @staticmethod
+    async def verify_refresh_token(refresh_token: str, db: AsyncSession = Depends(get_db)):
+        try:
+            payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
+            user_id: int = payload.get("id")
+            if user_id is None:
+                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token")
+        except JWTError:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token")
+
+        token = await db.execute(select(Token).filter(Token.refresh_token == refresh_token))
+        token = token.scalar()
+        if not token:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token")
+
+        user = await db.execute(select(User).filter(User.id == user_id))
+        user = user.scalar()
+        if not user:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
         return user
 

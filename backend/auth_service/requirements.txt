@@ -8,5 +8,11 @@ databases
 pydantic_settings
 uvicorn
 passlib
+passlib[bcrypt]
+pyjwt
 pydantic[email]
 fastapi_mail
+redis
+loguru
+python-jose
+python-multipart

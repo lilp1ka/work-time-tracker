@@ -1,5 +1,6 @@
 version: '3.8'
 
+
 services:
   # Auth-service
   auth-service:
@@ -16,6 +17,7 @@ services:
       - DATABASE_URL=postgresql://root:root@auth-db:5432/auth_db
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - PYTHONPATH=/auth_service:/auth_service/app:/auth_service/backend
     networks:
       - backend-network
 
@@ -34,6 +36,7 @@ services:
       - DATABASE_URL=postgresql://root:root@user-db:5432/user_db
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - PYTHONPATH=/user_service:/user_service/app:/user_service/backend
     networks:
       - backend-network
 
@@ -52,6 +55,8 @@ services:
       - DATABASE_URL=mongodb://mongo-service:27017/data_db
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - PYTHONPATH=/data_processing_service:/data_processing_service/app:/data_processing_service/backend
+
     networks:
       - backend-network
 

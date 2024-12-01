@@ -1,6 +1,6 @@
 FROM python:3.11
 
-WORKDIR /user
+WORKDIR /user_service
 
 COPY requirements.txt .
 

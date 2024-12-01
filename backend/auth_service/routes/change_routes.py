@@ -40,12 +40,12 @@ async def delete_user(data: DeleteUserRequest, db: AsyncSession = Depends(get_db
 
 
 @change_router.get("/reset-password")
-async def reset_password(email: str, token: str, db: AsyncSession = Depends(get_db)):
+async def reset_password(email: str, token_check_redis: str, db: AsyncSession = Depends(get_db), token: str = Depends(oauth2_scheme)):
     if not await redisClient.key_exists(email):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired token")
 
     token_from_redis = await redisClient.get_token(email)
-    if token_from_redis.decode("utf-8") != token:
+    if token_from_redis.decode("utf-8") != token_check_redis:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token")
 
     user = await email_instance.find_user_by_email(email, db)
@@ -61,7 +61,7 @@ async def reset_password(email: str, token: str, db: AsyncSession = Depends(get_
 
 
 @change_router.post("/request-password-reset")
-async def request_password_reset(email: str, db: AsyncSession = Depends(get_db)):
+async def request_password_reset(email: str, db: AsyncSession = Depends(get_db), token: str = Depends(oauth2_scheme)):
     user = await email_instance.find_user_by_email(email, db)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")

@@ -1,8 +1,6 @@
 from sqlalchemy import Column, Integer, String, Boolean, TIMESTAMP, ForeignKey, UniqueConstraint
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import func
-
-Base = declarative_base()
+from backend.user_service.database.database import Base
 
 
 class User(Base):

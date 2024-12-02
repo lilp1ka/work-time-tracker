@@ -7,7 +7,8 @@ class UserBase(BaseModel):
     is_admin: Optional[bool] = False
 
 class UserCreate(UserBase):
-    pass
+    class Config:
+        orm_mode = True
 
 class UserResponse(UserBase):
     id: int

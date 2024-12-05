@@ -1,6 +1,22 @@
+import sys
+import os
+
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware import Middleware
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../..')))
+
 from fastapi import FastAPI
-from routes import router
 
-app = FastAPI()
 
-app.include_router(router, prefix="/api", tags=["Users"])
+middleware = [
+    Middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"]
+    )
+]
+app = FastAPI(middleware=middleware)
+

@@ -1,0 +1,10 @@
+psql -h localhost -p 5551 -U root -d auth_db
+psql -h localhost -p 5552 -U root -d user_db
+docker exec -it data-db mongosh --host localhost --port 27017
+uvicorn main:app --host 0.0.0.0 --port 8002 --reload
+docker ps - посмотреть все контейнеры
+docker stop {id} + docker rm {id}
+docker volume rm $(docker volume ls)
+docker rmi $(docker images -q)
+
+PYTHONPATH=../../.. alembic revision --autogenerate -m "Initial migration"

@@ -2,6 +2,7 @@ mod active_app;
 mod afk;
 mod config;
 mod networking;
+mod auth_jwt;
 mod daemons{
     pub mod linux_daemonize;
 }

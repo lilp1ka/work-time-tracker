@@ -1,7 +1,7 @@
 
 FROM python:3.11
 
-WORKDIR /auth_service
+WORKDIR /data_processing
 
 COPY requirements.txt .
 

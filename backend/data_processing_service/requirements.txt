@@ -1,3 +1,14 @@
 uvicorn
 fastapi
 pymongo
+pydantic
+databases
+pydantic_settings
+passlib
+passlib[bcrypt]
+pyjwt
+pydantic[email]
+fastapi_mail
+redis
+loguru
+python-jose

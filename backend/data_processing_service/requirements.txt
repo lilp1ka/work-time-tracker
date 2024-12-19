@@ -4,3 +4,4 @@ motor
 pydantic
 pydantic[dotenv]
 pyjwt
+python-dotenv

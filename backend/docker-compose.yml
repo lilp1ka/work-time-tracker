@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3.7'
 
 
 services:
@@ -39,7 +39,6 @@ services:
     networks:
       - backend-network
 
-  # Data Processing Service
   data-processing-service:
     build:
       context: ./data_processing_service
@@ -49,15 +48,11 @@ services:
       - "8003:8000"
     depends_on:
       - mongo-service
-      - redis
     environment:
-      - DATABASE_URL=mongodb://mongo-service:27017/data_db
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
+      - DATABASE_URL=mongodb://mongo-service:27017/workInfo
     networks:
       - backend-network
 
-  # MongoDB service for data processing
   mongo-service:
     build:
       context: ./data_processing_service/database

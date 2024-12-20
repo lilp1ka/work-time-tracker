@@ -1,0 +1,29 @@
+POST http://localhost:8001/auth/register HTTP/1.1
+Content-Type: application/json
+
+{
+  "username": "huesos",
+  "email": "kzr10820@inohm.com",
+  "password": "sukasukasukasuka"
+}
+
+###
+
+POST http://localhost:8001/auth/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "kzr10820@inohm.com",
+  "password": "sukasukasukasuka"
+}
+
+###
+
+
+POST http://localhost:8001/auth/token/refresh HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJrenIxMDgyMEBpbm9obS5jb20iLCJ1c2VybmFtZSI6Imh1ZXNvcyIsImVtYWlsX2lzX3ZlcmlmaWVkIjpmYWxzZSwiZXhwIjoxNzMzNjIzMDExfQ.b0k3g_C937kizHosN4jzqyZIVNwWXo3Rj6q7AcnQmb8
+
+{
+  "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJrenIxMDgyMEBpbm9obS5jb20iLCJ1c2VybmFtZSI6Imh1ZXNvcyIsImVtYWlsX2lzX3ZlcmlmaWVkIjpmYWxzZSwiZXhwIjoxNzM0NDg1MjExfQ.x_tqU44GQNQ3vAi7MdfkwztHcRi5L6y_TargjpfPreY"
+}

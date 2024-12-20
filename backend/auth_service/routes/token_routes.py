@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from auth_service.database.schemas import TokenRefresh, TokenRefreshResponse
 from auth_service.database.database import get_db
-from auth_service.app.jwt_handler import create_access_token
+from auth_service.app.jwt_handler import create_access_token, create_refresh_token
 from auth_service.app.auth import login_instance
 
 token_router = APIRouter()
@@ -13,5 +13,8 @@ async def refresh_token(token_refresh: TokenRefresh, db: AsyncSession = Depends(
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token")
 
-    access_token = create_access_token(data={"id": user.id, "email": user.email, "username": user.username})
-    return {"access_token": access_token, "token_type": "bearer", "expires_in": 30 * 60}
+    data={"id": user.id, "email": user.email, "username": user.username}
+
+    access_token = create_access_token(data)
+    refresh_token = create_refresh_token(data)
+    return {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer", "expires_in": 30 * 60}

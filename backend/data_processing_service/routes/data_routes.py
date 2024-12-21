@@ -6,17 +6,21 @@
 
 from fastapi import APIRouter, Request
 from app.data_processing import data_processing
+from schemas.schemas import LogRequest, LogResponse
 
 data_router = APIRouter()
 
+
 @data_router.post("/save_data")
-async def save_data(request: Request):
+async def save_data(request: Request, log: LogRequest):
     return await data_processing.save_data(request)
 
-@data_router.get("/get_user_data")
-async def get_user_data():
-    pass
 
-@data_router.get("/get_group_data")
-async def get_group_data():
-    pass
+@data_router.get("/get_user_data",response_model=LogResponse)
+async def get_user_data(request: Request, username: str):
+    return await data_processing.get_user_data(request, username)
+
+
+@data_router.get("/get_group_data", response_model=LogResponse)
+async def get_group_data(request: Request, group: str):
+    return await data_processing.get_group_data(request, group)

@@ -19,9 +19,10 @@ class JWTMiddleware(BaseHTTPMiddleware):
         token = request.headers.get("Authorization")
         if token:
             payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-            print(payload)
             request.state.user = payload
         else:
             raise HTTPException(status_code=401, detail="Authorization header missing")
         response = await call_next(request)
         return response
+
+

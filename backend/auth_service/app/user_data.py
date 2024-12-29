@@ -106,6 +106,3 @@ class ChangeUserData(UserData):
 
 user_instance = UserData()
 change_user_instance = ChangeUserData()
-
-# написать тесты для всех методов
-# написать сброс пароля по ссылке

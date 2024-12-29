@@ -26,6 +26,5 @@ app = FastAPI(middleware=middleware)
 app.include_router(auth_router, prefix="/auth", tags=["auth"])
 app.include_router(email_router, prefix="/email", tags=["email"])
 app.include_router(users_router, prefix="/users", tags=["users"])
-
 app.include_router(token_router, prefix="/auth/token", tags=["token"])
 app.include_router(change_router, prefix="/change", tags=["change"])

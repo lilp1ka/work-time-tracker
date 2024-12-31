@@ -1,4 +1,3 @@
-import json
 import time
 from fastapi import Request, Depends, HTTPException
 from database.database import collection

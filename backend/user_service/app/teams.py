@@ -41,9 +41,19 @@ class Teams:
         await db.commit()
         return {"message": "Team deleted successfully"}
 
+
 class TeamUser(Teams):
-    async def add_user_to_team(self, request: Request,  db: AsyncSession = Depends(get_db)):
+    async def add_user_to_team(self, request: Request, team: AddUserToTeamRequest, db: AsyncSession = Depends(get_db)):
         username = await self.take_user_id_from_jwt(request)
+        email = await self.take_email_from_jwt(request)
+        confirmation_url, token = await send_invite(email)
+
+        # Assuming you have a way to get the team_id and users list
+        team_id = team.team_id
+        users = await self.get_team_users(team_id, db)
+
+        return {"team_id": team_id, "users": users["users"], "message": "Invite link has been sent",
+                "confirmation_url": confirmation_url}
 
     async def remove_user_from_team(self, request: Request, team: RemoveUserFromTeamRequest,
                                     db: AsyncSession = Depends(get_db)):
@@ -69,8 +79,12 @@ class TeamUser(Teams):
         return {"teams": teams}
 
     @staticmethod
+    async def take_email_from_jwt(request: Request):
+        return request.state.email
+
+    @staticmethod
     async def take_user_id_from_jwt(request: Request):
-        return request.state.user_id
+        return request.state.user
 
     @staticmethod
     async def is_user_exists(db: AsyncSession, user_id: int):

@@ -47,3 +47,19 @@ async def team_users(team_id: int, db: AsyncSession = Depends(get_db)):
 async def get_my_teams(request: Request, db: AsyncSession = Depends(get_db)):
     teams = await team_user.get_my_teams(request, db)
     return teams
+
+@teams_user_router.get("/accept-invite")
+async def accept_invite(token: str, db: AsyncSession = Depends(get_db)):
+    username = await verify_token(token)  # Implement this function to verify the token and get the username
+    if not username:
+        raise HTTPException(status_code=400, detail="Invalid token")
+
+    user = await db.execute(select(User).where(User.username == username))
+    user = user.scalar()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    team_member = TeamMember(team_id=team_id, user_id=user.id)  # Ensure `team_id` is passed or retrieved appropriately
+    db.add(team_member)
+    await db.commit()
+    return {"message": "User added to the team successfully"}

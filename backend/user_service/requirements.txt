@@ -13,3 +13,4 @@ redis
 loguru
 python-jose
 python-multipart
+passlib

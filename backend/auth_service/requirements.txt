@@ -15,4 +15,4 @@ fastapi_mail
 redis
 loguru
 python-jose
-python-multipart
+ python-multipart

@@ -28,7 +28,6 @@ class DataProcessing:
                 "title": entry['title'],
             }
             parsed_data["logs"].append(parsed_entry)
-
         try:
             await collection.insert_one(parsed_data)
             return {"message": "Data saved successfully"}
@@ -45,7 +44,7 @@ class DataProcessing:
 
     @staticmethod
     async def take_username_from_jwt(request: Request):
-        return request.state.user.get("username")
+        return request.state.user
 
 
 data_processing = DataProcessing()

@@ -11,10 +11,10 @@ class Teams:
     def __init__(self):
         pass
 
-    async def create_team(self, team: TeamCreate, db: AsyncSession = Depends(get_db)):
+    async def create_team(self,request: Request, team: TeamCreate, db: AsyncSession = Depends(get_db)):
         new_team = Team(
             name_group=team.name,
-            creator_id=team.creator_id,
+            creator_id=await self.take_id_from_jwt(request),
             is_active=False
         )
         db.add(new_team)
@@ -43,6 +43,9 @@ class Teams:
         await db.commit()
         return {"message": "Team deleted successfully"}
 
+    @staticmethod
+    async def take_id_from_jwt(request: Request):
+        return request.state.user_id
 
 class TeamUser(Teams):
     async def add_user_to_team_email(self, request: Request, team: AddUserToTeamRequest,
@@ -105,9 +108,6 @@ class TeamUser(Teams):
         result = await db.execute(
             select(TeamMember).where(TeamMember.team_id == team_id).where(TeamMember.user_id == user_id))
         return result.scalar()
-    @staticmethod
-    async def take_id_from_jwt(request: Request):
-        return request.state.user_id
 
 teams = Teams()
 team_user = TeamUser()

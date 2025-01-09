@@ -8,9 +8,9 @@ from user_service.database.database import get_db
 teams_user_router = APIRouter()
 teams_router = APIRouter()
 
-    @teams_router.post("/create_team", response_model=TeamResponse)
-async def create_team(team: TeamCreate, db: AsyncSession = Depends(get_db)):
-    team = await teams.create_team(team, db)
+@teams_router.post("/create_team", response_model=TeamResponse)
+async def create_team(request: Request, team: TeamCreate, db: AsyncSession = Depends(get_db)):
+    team = await teams.create_team(request, team, db)
     return team
 
 @teams_router.patch("/change_team_name", response_model=TeamResponse)

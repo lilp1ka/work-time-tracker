@@ -8,7 +8,7 @@ from user_service.database.database import get_db
 teams_user_router = APIRouter()
 teams_router = APIRouter()
 
-@teams_router.post("/create_team", response_model=TeamResponse)
+    @teams_router.post("/create_team", response_model=TeamResponse)
 async def create_team(team: TeamCreate, db: AsyncSession = Depends(get_db)):
     team = await teams.create_team(team, db)
     return team
@@ -25,12 +25,12 @@ async def delete_team(team: DeleteTeamRequest, db: AsyncSession = Depends(get_db
 
 @teams_router.get("/team_info", response_model=TeamResponse)
 async def team_info(team_id: int, db: AsyncSession = Depends(get_db)):
-    team = await teams.team_info(team_id, db)
+    team = await team_user.get_team_info(team_id, db)
     return team
 
 @teams_user_router.post("/add_user_to_team", response_model=TeamUsersResponse)
 async def add_user_to_team(request: Request, team: AddUserToTeamRequest, db: AsyncSession = Depends(get_db)):
-    team = await team_user.add_user_to_team(request, team, db)
+    team = await team_user.add_user_to_team_email(request, team, db)
     return team
 
 @teams_user_router.delete("/remove_user_from_team")
@@ -49,17 +49,9 @@ async def get_my_teams(request: Request, db: AsyncSession = Depends(get_db)):
     return teams
 
 @teams_user_router.get("/accept-invite")
-async def accept_invite(token: str, db: AsyncSession = Depends(get_db)):
-    username = await verify_token(token)  # Implement this function to verify the token and get the username
-    if not username:
-        raise HTTPException(status_code=400, detail="Invalid token")
-
-    user = await db.execute(select(User).where(User.username == username))
-    user = user.scalar()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-
+async def accept_invite(token: str = Depends(get_db), db: AsyncSession = Depends(get_db)):
     team_member = TeamMember(team_id=team_id, user_id=user.id)  # Ensure `team_id` is passed or retrieved appropriately
     db.add(team_member)
     await db.commit()
     return {"message": "User added to the team successfully"}
+

@@ -1,5 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
+from typing import Optional
 
 class TeamCreate(BaseModel):
     name: str
@@ -23,15 +24,25 @@ class DeleteTeamRequest(BaseModel):
 
 class AddUserToTeamRequest(BaseModel):
     team_id: int
+    email: Optional[str] = None
+
+class TeamUsersResponse(BaseModel):
+    team_id: int
+    users: list[int]
+    confirmation_url: Optional[str] = None
+
+class TeamUsersListResponse(BaseModel):
+    team_id: int
+    creator_id: int
+    users: list[int]
 
 class RemoveUserFromTeamRequest(BaseModel):
     team_id: int
     user_id: int
 
-class TeamUsersResponse(BaseModel):
+class TeamInfo(BaseModel):
     team_id: int
-    users: list[int]
-
+    name: str
 
 class TeamUsersMyListOfTeamsResponse(BaseModel):
-    teams: list[int]
+    teams: list[TeamInfo]

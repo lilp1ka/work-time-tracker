@@ -10,7 +10,6 @@ class User(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     username = Column(String(255), nullable=False, unique=True)
     is_active = Column(Boolean, default=False)
-    is_admin = Column(Boolean, default=False)
 
 
 class Team(Base):
@@ -19,8 +18,6 @@ class Team(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     name_group = Column(String(255), nullable=False, unique=True)
     creator_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    admin_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    type_subscribe = Column(String(255), nullable=False)
     is_active = Column(Boolean, default=False)
     created_at = Column(TIMESTAMP, server_default=func.current_timestamp())
 

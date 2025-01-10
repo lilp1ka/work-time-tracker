@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Invitation</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 600px;
+            margin: 30px auto;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            border: 1px solid #eaeaea;
+        }
+        .header {
+            background-color: #007BFF;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            padding: 20px;
+        }
+        .content h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #444;
+        }
+        .content p {
+            margin: 10px 0;
+        }
+        .invite-box {
+            background-color: #f9f9f9;
+            border: 1px dashed #ccc;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+            color: #555;
+        }
+        .footer {
+            background-color: #f1f1f1;
+            text-align: center;
+            padding: 10px 20px;
+            font-size: 12px;
+            color: #888;
+        }
+        .footer a {
+            color: #007BFF;
+            text-decoration: none;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>You're Invited to Join Our Team!</h1>
+        </div>
+        <div class="content">
+            <p>Hello,</p>
+            <p>We are excited to invite you to join our team at <strong>Sosal Company</strong>. Your skills and experience will be a great addition to our team.</p>
+            <p>Click the link below to accept the invitation and get started:</p>
+            <div class="invite-box">{{ invitation_link }}</div>
+            <p>If you have any questions or need assistance, feel free to reach out to us.</p>
+            <p>Looking forward to working with you!</p>
+            <p>Best regards,</p>
+            <p><strong>Sosal Company</strong></p>
+        </div>
+        <div class="footer">
+            <p>If you have any questions, please contact our <a href="mailto:axomjak@gmail.com">support team</a>.</p>
+            <p>&copy; 2024 Sosal Company. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

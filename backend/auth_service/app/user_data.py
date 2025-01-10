@@ -1,9 +1,8 @@
 import logging
-from sqlalchemy import delete
 from auth_service.database.models import Token
 from pydantic import EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from fastapi import Depends, HTTPException, status
 from jose import JWTError, jwt
 from auth_service.app.jwt_handler import SECRET_KEY, ALGORITHM
@@ -106,6 +105,3 @@ class ChangeUserData(UserData):
 
 user_instance = UserData()
 change_user_instance = ChangeUserData()
-
-# написать тесты для всех методов
-# написать сброс пароля по ссылке

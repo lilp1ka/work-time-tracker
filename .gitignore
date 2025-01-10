@@ -22,3 +22,5 @@ venv/
 coverage/
 *.lcov
 *.md
+*.py
+*.yml

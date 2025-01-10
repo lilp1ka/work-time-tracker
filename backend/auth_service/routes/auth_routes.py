@@ -23,11 +23,11 @@ async def login_user(user: UserLogin, request: Request, db: AsyncSession = Depen
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
 
+    data={"id": user.id, "email": user.email, "username": user.username,
+                                             "email_is_verified": user.email_is_verified}
 
-    access_token = create_access_token(data={"id": user.id, "email": user.email, "username": user.username,
-                                             "email_is_verified": user.email_is_verified})
-    refresh_token = create_refresh_token(data={"id": user.id, "email": user.email, "username": user.username,
-                                               "email_is_verified": user.email_is_verified})
+    access_token = create_access_token(data)
+    refresh_token = create_refresh_token(data)
 
     device_info = request.headers.get("User-Agent")
 

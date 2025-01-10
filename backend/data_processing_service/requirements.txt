@@ -1,14 +1,7 @@
 uvicorn
 fastapi
-pymongo
+motor
 pydantic
-databases
-pydantic_settings
-passlib
-passlib[bcrypt]
+pydantic[dotenv]
 pyjwt
-pydantic[email]
-fastapi_mail
-redis
-loguru
-python-jose
+python-dotenv

@@ -2,6 +2,8 @@ mod active_app;
 mod afk;
 mod config;
 mod networking;
+mod auth_jwt;
+mod auth;
 mod daemons{
     pub mod linux_daemonize;
 }
@@ -22,8 +24,10 @@ use std::fs::File;
 use log::{info, warn, error, debug};
 
 use std::io::{self};
-
+use auth::*;
 use std::io::ErrorKind as IOErrorKind;
+
+use clap::{Arg, Command as clCommand};
 
 // use active_app::logs_from_file;
 enum Message {
@@ -36,9 +40,117 @@ fn main() {
 
     env_logger::init();
     info!("Logger initializated");
-    if cfg!(target_os = "linux"){
-        daemons::linux_daemonize::daemonize();
-    }
+
+    let matches = clCommand::new("Auth Program")
+        .version("1.0")
+        .author("Author Name")
+        .about("Authenticates to a server with login and password")
+        .arg(
+            Arg::new("login")
+                .short('l')
+                .long("login")
+                .value_name("LOGIN")
+                .help("Specifies the login")
+                .required(false),
+        ) 
+        .arg(
+            Arg::new("password")
+                .short('p')
+                .long("password")
+                .value_name("PASSWORD")
+                .help("Specifies the password")
+                .required(false),
+        ) 
+        .get_matches();
+
+    let test_handle = thread::spawn(move || {
+        let rt = Runtime::new().expect("Failed to create Tokio runtime");
+
+        if matches.contains_id("login") && matches.contains_id("password") {
+            let login = matches
+                .get_one::<String>("login")
+                .expect("Username required");
+            let password = matches
+                .get_one::<String>("password")
+                .expect("Password required");
+
+            debug!("GOT CREDS FROM FLAGS: {:#?} {:#?}", login, password);
+
+            rt.block_on(async {
+                let (access_token, refresh_token) = match request_jwt(login, password).await{
+                    Ok(JwtToken{access_token, refresh_token}) => {
+                        store_tokens_in_keyring("wtt", &access_token, &refresh_token);
+                        store_credentials_in_keyring("wtt", &login, &password);
+                        (access_token, refresh_token)},
+
+                    Err(JwtError::ConntectionError) => {
+                        error!("Connection refused, check your internet connection.");
+                        error!("App will work locally. To connect to the server kill PID and then enter correct creds.");
+                        return;
+                    }
+
+                    Err(JwtError::InvalidCredentials) => {
+                        error!("Invalid credentials");
+                        error!("App will work locally. To connect to the server kill PID and then enter correct creds.");
+                        return;
+                    }
+
+                    Err(_) => {
+                        error!("Unexpected error");
+                        return;
+                    }
+                };
+            });
+        } else {
+
+            rt.block_on(async {
+                match refresh_jwt().await{
+                    Ok(JwtToken { access_token, refresh_token }) => {
+                        debug!("refresh_jwt -> access: {}, refresh: {}", access_token, refresh_token);
+                        match store_tokens_in_keyring("wtt", access_token.as_str(), refresh_token.as_str()){
+                            Ok(_) => {
+                                debug!("Tokens stored in keyring");
+                                return;
+                            }
+                            Err(_) => {
+                                error!("Couldn't save JWT tokens to keyring.");    
+                                error!("App will work locally. To connect to the server kill PID and then enter correct creds.");
+                                return;
+                            } 
+                        }
+                    }
+
+                    Err(JwtError::ConntectionError) => {
+                        error!("Connection refused, check your internet connection.");
+                        error!("App will work locally. To connect to the server kill PID and then enter correct creds.");
+                        return;
+                    }
+
+                    Err(JwtError::InvalidCredentials) => {
+                        
+                        error!("Invalid credentials");
+                        error!("App will work locally. To connect to the server kill PID and then enter correct creds.");
+                        return;
+                    }
+
+                    Err(_) => {
+                        error!("Unexpected error");
+                        return;
+                    }
+                }
+            });
+        }
+
+
+    });
+    debug!("test_handle about to end");
+    test_handle.join().expect("exit test_handle with code 1");
+    debug!("test_handle ended");
+
+
+    // if cfg!(target_os = "linux"){
+    //     daemons::linux_daemonize::daemonize();
+    // }
 
     
 

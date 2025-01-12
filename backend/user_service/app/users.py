@@ -9,13 +9,14 @@ class Users:
     def __init__(self):
         pass
 
-    async def create_user(self, user: UserCreate, db: AsyncSession = Depends(get_db)):
-        existing_user = await self.is_user_exists(db, user.username)
+    async def create_user(self, request: Request, db: AsyncSession = Depends(get_db)):
+        username = await self.take_username_from_jwt(request)
+        existing_user = await self.is_user_exists(db, username)
         if existing_user:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='User already registered')
 
         new_user = User(
-            username=user.username,
+            username=username,
         )
         db.add(new_user)
         await db.commit()

@@ -7,8 +7,8 @@ from user_service.app.users import users
 users_router = APIRouter()
 
 @users_router.post("/create_user", response_model=UserResponse)
-async def create_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
-    user = await users.create_user(user, db)
+async def create_user(request: Request, db: AsyncSession = Depends(get_db)):
+    user = await users.create_user(request, db)
     return user
 
 @users_router.patch("/change_username", response_model=UserResponse)

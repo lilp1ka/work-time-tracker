@@ -14,6 +14,12 @@ class Teams:
         pass
 
     async def create_team(self,request: Request, team: TeamCreate, db: AsyncSession = Depends(get_db)):
+        # проверка на то что тима уже существует
+        existing_team = await db.execute(select(Team).where(Team.name_group == team.name))
+
+        existing_team = existing_team.scalar()
+        if existing_team:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Team with this name already exists")
         creator_id = await self.take_id_from_jwt(request)
         new_team = Team(
             name_group=team.name,

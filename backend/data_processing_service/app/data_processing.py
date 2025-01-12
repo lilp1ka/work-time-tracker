@@ -34,12 +34,25 @@ class DataProcessing:
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error saving data: {str(e)}")
 
+    async def get_user_data(self, request: Request, username: str, date_from: str = None,
+                            date_to: str = None) -> LogResponse:
+        query = {"username": username}
+        if date_from:
+            query["time_save"] = {"$gte": date_from}
+        if date_to:
+            if "time_save" in query:
+                query["time_save"]["$lte"] = date_to
+            else:
+                query["time_save"] = {"$lte": date_to}
 
-    async def get_user_data(self, request: Request, username: str) -> LogResponse:
-        username_from_jwt = await self.take_username_from_jwt(request)
-        # в методе get_user_data мне нужно добавить фильты по дате
+        try:
+            user_data = await collection.find(query).to_list(length=None)
+            if not user_data:
+                raise HTTPException(status_code=404, detail="User data not found")
+            return LogResponse(data=user_data)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error retrieving user data: {str(e)}")
     async def get_group_data(self, request: Request, group: str) -> LogResponse:
-        # метод в котором я получаю много юзернеймов и по ним нужно соснуть данные из бд
         pass
 
     @staticmethod

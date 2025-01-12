@@ -21,5 +21,5 @@ async def get_user_data(request: Request, username: str, date_from: str = None, 
 
 
 @data_router.get("/get_group_data", response_model=LogResponse)
-async def get_group_data(request: Request, group: str):
-    return await data_processing.get_group_data(request, group)
+async def get_group_data(request: Request, group: str, usernames: list, date_from: str = None, date_to: str = None):
+    return await data_processing.get_group_data(request, group, usernames, date_from, date_to)

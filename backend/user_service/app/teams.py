@@ -14,7 +14,6 @@ class Teams:
         pass
 
     async def create_team(self,request: Request, team: TeamCreate, db: AsyncSession = Depends(get_db)):
-        # проверка на то что тима уже существует
         existing_team = await db.execute(select(Team).where(Team.name_group == team.name))
 
         existing_team = existing_team.scalar()

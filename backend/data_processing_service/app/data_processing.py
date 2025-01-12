@@ -52,8 +52,15 @@ class DataProcessing:
             return LogResponse(data=user_data)
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error retrieving user data: {str(e)}")
-    async def get_group_data(self, request: Request, group: str) -> LogResponse:
-        pass
+
+    async def get_group_data(self, request: Request, group: str, usernames: list, date_from: str = None,
+                                 date_to: str = None) -> LogResponse:
+        user_data_list = []
+
+        for username in usernames:
+            user_data = await self.get_user_data(request, username, date_from, date_to)
+            user_data_list.append(user_data.data)
+        return LogResponse(data=user_data_list)
 
     @staticmethod
     async def take_username_from_jwt(request: Request):

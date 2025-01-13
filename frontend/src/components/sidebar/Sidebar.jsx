@@ -22,7 +22,7 @@ const menuItems = [
   {
     id: 2,
     icon: <PiInfoLight style={{ width: "24px", height: "24px" }} />,
-    title: "UserList",
+    title: "UserInfo",
     link: "/users",
   },
   {
@@ -59,7 +59,7 @@ function Sidebar({ active, setActive }) {
   return (
     <aside className="h-full w-full flex flex-col justify-between ">
       <div className="px-6 py-16">
-        <h1 className="font-semibold text-black text-2xl">Sosal.</h1>
+        <h1 className="font-semibold text-black text-2xl">work-time-tracker</h1>
       </div>
       <nav className="flex-1 pt-10">
         <ul className="space-y-4 px-6"> {/* змінив padding на 6 */}

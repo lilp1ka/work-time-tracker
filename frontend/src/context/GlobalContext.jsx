@@ -95,6 +95,140 @@ export const ContextProvider = ({ children }) => {
       setLoading(false);
     }
   }, []);
+
+
+
+  const inviteUserToTeam = async (teamId, email) => {
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}team_user/add_user_to_team`,
+        { team_id: teamId, email },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (err) {
+      console.error(err.response?.data?.detail || "Не вдалося надіслати запрошення.");
+      throw err;
+    }
+  };
+
+  const createTeam = async (teamName) => {
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}teams/create_team`,
+        { name: teamName },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (err) {
+      console.error(err.response?.data?.detail || "Помилка створення команди");
+      throw err;
+    }
+  };
+
+  const changeTeamName = async (teamId, newName) => {
+    try {
+      const response = await axios.patch(
+        `${API_BASE_URL}teams/change_team_name`,
+        { team_id: teamId, new_name: newName },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (err) {
+      console.error(err.response?.data?.detail || "Помилка зміни назви команди");
+      throw err;
+    }
+  };
+
+  const deleteTeam = async (teamId) => {
+    try {
+      const response = await axios.delete(`${API_BASE_URL}teams/delete_team`, {
+        data: { team_id: teamId },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return response.data;
+    } catch (err) {
+      console.error(err.response?.data?.detail || "Помилка видалення команди");
+      throw err;
+    }
+  };
+
+  const getTeamUsers = async (teamId) => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}team_user/team_users`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: { team_id: teamId },
+      });
+      return response.data;
+    } catch (err) {
+      console.error(err.response?.data?.detail || "Помилка отримання учасників команди");
+      throw err;
+    }
+  };
+
+  const removeUserFromTeam = async (teamId, userId) => {
+    try {
+      const response = await axios.delete(`${API_BASE_URL}team_user/remove_user_from_team`, {
+        data: { team_id: teamId, user_id: userId },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return response.data;
+    } catch (err) {
+      console.error(err.response?.data?.detail || "Помилка видалення користувача з команди");
+      throw err;
+    }
+  };
+
+  const getTeamInfo = async (teamId) => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}teams/team_info`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: { team_id: teamId },
+      });
+      return response.data;
+    } catch (err) {
+      console.error(err.response?.data?.detail || "Помилка отримання інформації про команду");
+      throw err;
+    }
+  };
+
+  const getMyTeams = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}team_user/my_teams`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return response.data.teams;
+    } catch (err) {
+      console.error(err.response?.data?.detail || "Помилка отримання списку команд");
+      throw err;
+    }
+  };
+
+  
+
+
   
       return (
         <GlobalContext.Provider
@@ -107,6 +241,14 @@ export const ContextProvider = ({ children }) => {
             getUserById,
             getCurrentUser,
             getAllActiveUsers,
+            inviteUserToTeam,
+            createTeam,
+            getTeamInfo,
+            changeTeamName,
+            deleteTeam,
+            getTeamUsers,
+            removeUserFromTeam,
+            getMyTeams,
           }}
         >
           {children}

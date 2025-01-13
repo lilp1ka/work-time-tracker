@@ -5,3 +5,4 @@ pydantic
 pydantic[dotenv]
 pyjwt
 python-dotenv
+python-multipart

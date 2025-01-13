@@ -5,40 +5,38 @@ import PasswordResetPage from "./PasswordResetPage";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../ui/tabs";
 
 function AuthenticationPage() {
-  const [activeTab, setActiveTab] = useState("login"); // Стан для активної вкладки
+  const [activeTab, setActiveTab] = useState("login");
 
   const handleTabChange = (tab) => {
-    setActiveTab(tab); // Змінюємо стан вкладки
+    setActiveTab(tab);
   };
 
   return (
     <div className="h-screen flex justify-center items-center bg-gray-100">
       {activeTab === "resetPassword" ? (
-        // Якщо активна вкладка "resetPassword", показуємо тільки компонент для скидання пароля
         <div className="flex justify-center items-center w-full h-full">
           <PasswordResetPage />
         </div>
       ) : (
-        // В іншому випадку показуємо стандартну сторінку
-        <div className="flex bg-white shadow-lg rounded-lg w-[900px] overflow-hidden">
+        <div className="flex flex-row bg-white shadow-lg rounded-lg w-[900px] overflow-hidden">
           {/* Ліва частина з ілюстрацією */}
           <div className="hidden md:flex flex-1 justify-center items-center bg-blue-50">
             <img
               src="photo_2024-12-05_01-22-01.jpg"
               alt="Illustration"
-              className="max-w-[80%], max-h-[100%]"
+              className="max-w-full max-h-full object-contain"
             />
           </div>
           {/* Права частина з формами */}
           <div className="flex flex-col flex-1 justify-center items-center p-8">
-            <h2 className="text-2xl font-bold mb-6">Welcome!</h2>
+            <h2 className="text-2xl font-bold mb-6 text-center">Welcome!</h2>
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full max-w-[350px]">
               {/* Вкладки */}
-              <TabsList className="grid w-full grid-cols-2 mb-4 bg-indigo-100">
+              <TabsList className="grid w-full grid-cols-2 mb-6 bg-indigo-100 rounded-lg">
                 <TabsTrigger
                   value="login"
                   className={`py-2 text-lg font-medium text-center ${
-                    activeTab === "login" ? "border-b-2 border-blue-500" : "border-transparent"
+                    activeTab === "login" ? "text-blue-500" : "text-gray-600"
                   }`}
                 >
                   Login
@@ -46,7 +44,7 @@ function AuthenticationPage() {
                 <TabsTrigger
                   value="register"
                   className={`py-2 text-lg font-medium text-center ${
-                    activeTab === "register" ? "border-b-2 border-blue-500" : "border-transparent"
+                    activeTab === "register" ? "text-blue-500" : "text-gray-600"
                   }`}
                 >
                   Register
@@ -54,15 +52,7 @@ function AuthenticationPage() {
               </TabsList>
               {/* Вміст вкладок */}
               <TabsContent value="login">
-                <Login />
-                <div className="mt-2 text-sm text-center text-gray-600">
-                  <button
-                    className="text-blue-500 hover:underline"
-                    onClick={() => handleTabChange("resetPassword")}
-                  >
-                    Forgot Password?
-                  </button>
-                </div>
+                <Login handleTabChange={handleTabChange} />
               </TabsContent>
               <TabsContent value="register">
                 <Register />
@@ -75,4 +65,4 @@ function AuthenticationPage() {
   );
 }
 
-export default AuthenticationPage;
+export default AuthenticationPage

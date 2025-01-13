@@ -6,27 +6,27 @@ import 'react-toastify/dist/ReactToastify.css'
 import Register from './components/authentication/Register'
 import Login from './components/authentication/Login'
 import PasswordResetPage from './components/authentication/PasswordResetPage'
-import SetTasks from './components/AdminDashboard/SetTasks'
 import AuthenticationPage from './components/authentication/AuthenticationPage'
-import HomePage from './pages/HomePage'
-
+import DashboardPage from './pages/DashboardPage'
+import UserList from './pages/UserList'
+import Teamwork from './pages/TeamWork'
 
 function App() {
 
   return (
     <>
-      <Router>
-        <Routes>
-          <Route path="/" element={<AuthenticationPage />} />
-          <Route path="/authentication" element={<AuthenticationPage />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/login" element={<Login />} />
-          <Route path='/password-reset' element={<PasswordResetPage />} />
-          <Route path='/home' element={<HomePage />} />
-          <Route path='/settasks' element={<SetTasks />} />
-        </Routes>
-      </Router>
-      <ToastContainer />
+        <Router>
+          <Routes>
+            <Route path="/" element={<DashboardPage />} />
+            <Route path="/authentication" element={<AuthenticationPage />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/login" element={<Login />} />
+            <Route path='/password-reset' element={<PasswordResetPage />} />
+            <Route path='/users' element={<UserList />} />
+            <Route path='/teamwork' element={<Teamwork />} />
+          </Routes>
+        </Router>
+        <ToastContainer />
     </>
   )
 }

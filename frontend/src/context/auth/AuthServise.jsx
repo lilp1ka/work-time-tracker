@@ -60,4 +60,3 @@ const getTokenFromLocalStorage = () => {
 const authService = { register, login, logout, getTokenFromLocalStorage}
 
 export default authService
-

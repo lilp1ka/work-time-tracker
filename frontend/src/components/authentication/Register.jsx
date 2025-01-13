@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
-import { Link, useNavigate } from "react-router-dom";
+
 import { register, reset } from "@/context/auth/AuthSlice";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -18,7 +18,6 @@ function Register() {
         (state) => state.auth
     );
     const dispatch = useDispatch();
-    const navigate = useNavigate();
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -32,12 +31,11 @@ function Register() {
 
     useEffect(() => {
         if (isError) toast.error(message);
-        if (isSuccess || user) {
-            navigate("/home");
+        if (isSuccess) {
             toast.success("Registration successful!");
         }
-        dispatch(reset());
-    }, [isError, isSuccess, user, navigate, dispatch]);
+        dispatch(reset());       
+    }, [isError, isSuccess, message, dispatch]);
 
     return (
         <div className="flex flex-col gap-4">

@@ -21,11 +21,11 @@ function AuthenticationPage() {
         <div className="flex flex-row bg-white shadow-lg rounded-lg w-[900px] overflow-hidden">
           {/* Ліва частина з ілюстрацією */}
           <div className="hidden md:flex flex-1 justify-center items-center bg-blue-50">
-            <img
+            {/* <img
               src="photo_2024-12-05_01-22-01.jpg"
               alt="Illustration"
               className="max-w-full max-h-full object-contain"
-            />
+            /> */}
           </div>
           {/* Права частина з формами */}
           <div className="flex flex-col flex-1 justify-center items-center p-8">

@@ -16,7 +16,7 @@ from auth_service.mail.email_sender import send_resset_password_email
 class UserData:
     def __init__(self):
         pass
-
+#sosal
     @staticmethod
     async def get_user(user_id: int, db: AsyncSession = Depends(get_db)):
         result = await db.execute(select(User).filter(User.id == user_id))

@@ -1,3 +1,81 @@
+
+
+# ⏱️ Work Time Tracker
+
+**Work Time Tracker** is a modern, scalable system for monitoring user activity and analyzing productivity — both for individuals and teams. Built with automation, transparency, and flexibility in mind, it provides real-time insights into how time is spent across applications and tasks.
+
+---
+
+## 🎯 Project Goals
+
+- Develop a comprehensive system to monitor and analyze user work time.
+- Provide a convenient tool for both employees and managers to assess productivity.
+- Increase transparency and awareness about how time is used, especially in remote environments.
+
+---
+
+## ⚙️ Key Features
+
+- 🔍 **Activity Monitoring** – Tracks active windows, applications, and AFK (away from keyboard) time automatically.
+- 🧠 **Data Analysis** – Visual dashboards and charts for individual and team reports.
+- 🔐 **Authentication & Authorization** – JWT-based secure login and access control.
+- 🌐 **Offline Support** – Local data storage and sync retry in case of server issues.
+- 👥 **Team Management** – Full CRUD support for users and teams.
+- 📈 **Performance Insights** – Compares metrics to identify areas for improvement.
+
+---
+
+## 🏗️ Architecture
+
+- **Desktop Daemon** – Built in Rust. Monitors activity and sends logs.
+- **Backend API** – Built with Python (FastAPI), processes and stores data.
+- **Frontend** – Built in React. Interactive dashboards and management UI.
+- **Databases**:
+  - `PostgreSQL` for user and team data.
+  - `MongoDB` for activity logs.
+  - `Redis` for caching and performance optimization.
+- **Microservices Architecture** – Cleanly separated concerns for flexibility and maintainability.
+- **Dockerized Infrastructure** – Easy deployment and scaling.
+
+---
+
+## 📉 Advantages
+
+- ✅ **Automation** – No manual input required.
+- 📊 **Insightful Analytics** – Visual and detailed productivity reports.
+- 🔄 **Flexible Reports** – Individual and team-level insights.
+- 🚀 **Scalable Design** – Suitable for small teams or large organizations.
+- 🧩 **Modular Components** – Easy to extend and maintain.
+
+---
+
+## 🧪 Risk Management Overview
+
+| Risk                       | Probability | Impact | Priority |
+|---------------------------|-------------|--------|----------|
+| Cybersecurity             | 8           | 9      | 70       |
+| Data Processing Errors    | 6           | 7      | 40       |
+| Scalability Issues        | 5           | 6      | 30       |
+| System Availability       | 4           | 8      | 30       |
+| Software Bugs             | 6           | 6      | 36       |
+| Fire / Water Damage       | 2–3         | 10     | 20–30    |
+
+Risk analysis was conducted to ensure system robustness and prevent potential failures before they occur.
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Docker & Docker Compose
+- Node.js (for frontend dev)
+- Rust (for desktop daemon dev)
+- Python 3.10+ (for backend)
+
+### 
+
+
 psql -h localhost -p 5551 -U root -d auth_db
 psql -h localhost -p 5552 -U root -d user_db
 docker exec -it data-db mongosh --host localhost --port 27017
